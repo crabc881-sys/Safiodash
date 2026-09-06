@@ -1,38 +1,568 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="htmlRoot">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Safio | إدارة السيرفر</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg-void:#1c0508; --red-deep:#3d0c10; --red-main:#7a1620;
-    --yellow:#f4b400; --yellow-bright:#ffd447; --white:#ffffff; --text-muted:#caa79a;
+    --bg-void:#1c0508;
+    --red-deep:#3d0c10;
+    --red-main:#7a1620;
+    --red-bright:#a8232f;
+    --yellow:#f4b400;
+    --yellow-bright:#ffd447;
+    --white:#ffffff;
+    --text-soft:#f2e4d8;
+    --text-muted:#caa79a;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   body{
     font-family:'Tajawal', sans-serif;
-    background:linear-gradient(160deg, var(--bg-void), var(--red-deep));
-    color:var(--white); min-height:100vh;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    text-align:center;padding:40px;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(168,35,47,0.3), transparent 45%),
+      linear-gradient(160deg, var(--bg-void) 0%, var(--red-deep) 60%, var(--bg-void) 100%);
+    color:var(--text-soft);
+    min-height:100vh;
   }
-  h1{font-family:'Rubik', sans-serif;font-weight:900;font-size:2.1rem;margin-bottom:14px;}
-  span{color:var(--yellow);}
-  p{color:var(--text-muted);max-width:480px;line-height:1.8;margin-bottom:28px;}
-  a{background:var(--white);color:var(--red-deep);padding:14px 32px;border-radius:10px;font-weight:700;text-decoration:none;}
+  h1,h2,.brand{font-family:'Rubik', sans-serif;}
+  a{text-decoration:none;color:inherit;}
+  button{font-family:'Tajawal', sans-serif;cursor:pointer;}
+
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 5%;border-bottom:1px solid rgba(244,180,0,0.15);
+    position:relative;z-index:40;
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.25rem;color:var(--white);}
+  .brand .mark{
+    width:32px;height:32px;background:var(--yellow);
+    clip-path:polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+    display:flex;align-items:center;justify-content:center;color:var(--bg-void);font-weight:900;font-size:0.9rem;
+  }
+
+  .header-right, .header-left{position:relative;display:flex;align-items:center;gap:10px;}
+
+  .chip-btn{
+    display:flex;align-items:center;gap:10px;
+    background:rgba(0,0,0,0.25);
+    border:1px solid rgba(244,180,0,0.2);
+    padding:7px 14px 7px 8px;border-radius:999px;
+    color:var(--white);
+  }
+  .chip-btn img{width:28px;height:28px;border-radius:50%;object-fit:cover;}
+  .chip-btn .g-mini-icon{
+    width:28px;height:28px;border-radius:8px;background:var(--red-main);
+    display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:var(--yellow-bright);
+    overflow:hidden;
+  }
+  .chip-btn .g-mini-icon img{width:100%;height:100%;border-radius:0;}
+  .chip-btn span{font-size:0.9rem;font-weight:500;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+  .hamburger{
+    width:40px;height:40px;border-radius:10px;
+    background:rgba(0,0,0,0.25);border:1px solid rgba(244,180,0,0.2);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  }
+  .hamburger span{display:block;width:18px;height:2px;background:var(--yellow-bright);border-radius:2px;}
+
+  .dropdown{
+    position:absolute;top:52px;
+    background:linear-gradient(160deg, rgba(58,12,17,0.98), rgba(28,5,8,0.98));
+    border:1px solid rgba(244,180,0,0.2);
+    border-radius:14px;
+    min-width:230px;
+    box-shadow:0 16px 40px rgba(0,0,0,0.45);
+    overflow:hidden;
+    opacity:0;transform:translateY(-8px);
+    pointer-events:none;
+    transition:opacity 0.18s ease, transform 0.18s ease;
+  }
+  .dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto;}
+  .header-left .dropdown{left:0;}
+  .header-right .dropdown{right:0;max-height:340px;overflow-y:auto;}
+
+  .dropdown-item{
+    display:flex;align-items:center;gap:10px;
+    padding:13px 16px;font-size:0.92rem;color:var(--text-soft);
+    border-bottom:1px solid rgba(244,180,0,0.08);
+    transition:background 0.15s;
+  }
+  .dropdown-item:last-child{border-bottom:none;}
+  .dropdown-item:hover{background:rgba(244,180,0,0.08);}
+  .dropdown-item.danger{color:#ff8a8a;}
+  .dropdown-item img{width:22px;height:22px;border-radius:50%;}
+  .dropdown-item .flag{font-size:1.1rem;}
+
+  .dropdown-current{
+    padding:14px 16px;
+    background:rgba(244,180,0,0.06);
+    display:flex;align-items:center;gap:10px;
+    border-bottom:1px solid rgba(244,180,0,0.15);
+  }
+  .dropdown-current small{display:block;color:var(--text-muted);font-size:0.72rem;margin-bottom:2px;}
+  .dropdown-current .g-mini-icon{width:30px;height:30px;border-radius:8px;background:var(--red-main);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--yellow-bright);overflow:hidden;flex:0 0 auto;}
+  .dropdown-current .g-mini-icon img{width:100%;height:100%;object-fit:cover;}
+
+  .guild-option{
+    display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:0.9rem;
+    border-bottom:1px solid rgba(244,180,0,0.06);
+  }
+  .guild-option:hover{background:rgba(244,180,0,0.08);}
+  .guild-option .g-mini-icon{width:26px;height:26px;border-radius:7px;background:var(--red-main);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:var(--yellow-bright);overflow:hidden;flex:0 0 auto;}
+  .guild-option .g-mini-icon img{width:100%;height:100%;object-fit:cover;}
+  .guild-option.active{background:rgba(244,180,0,0.12);color:var(--yellow-bright);}
+
+  main{padding:36px 5% 100px;max-width:1000px;margin:0 auto;}
+  .page-title{font-size:clamp(1.6rem,3.2vw,2.1rem);color:var(--white);font-weight:900;margin-bottom:26px;}
+
+  .stats-grid{
+    display:grid;grid-template-columns:repeat(auto-fit, minmax(180px,1fr));
+    gap:18px;margin-bottom:40px;
+  }
+  .stat-card{
+    background:linear-gradient(160deg, rgba(122,22,32,0.35), rgba(28,5,8,0.55));
+    border:1px solid rgba(244,180,0,0.15);border-radius:16px;padding:22px;
+  }
+  .stat-card .label{color:var(--text-muted);font-size:0.85rem;margin-bottom:8px;}
+  .stat-card .value{font-family:'Rubik', sans-serif;font-size:1.7rem;font-weight:900;color:var(--yellow-bright);}
+  .stat-card .value.small-note{font-size:1rem;color:var(--text-muted);font-family:'Tajawal', sans-serif;font-weight:500;margin-top:4px;}
+
+  .section-title{color:var(--white);font-weight:700;font-size:1.1rem;margin:36px 0 16px;}
+  .nav-cards{display:flex;flex-direction:column;gap:12px;margin-bottom:40px;}
+  .nav-card{
+    display:flex;align-items:center;gap:16px;
+    background:linear-gradient(160deg, rgba(122,22,32,0.25), rgba(28,5,8,0.5));
+    border:1px solid rgba(244,180,0,0.12);border-radius:14px;
+    padding:18px 20px;transition:transform 0.15s ease, border-color 0.15s ease;
+  }
+  .nav-card:hover{transform:translateX(-4px);border-color:rgba(244,180,0,0.4);}
+  html[dir="ltr"] .nav-card:hover{transform:translateX(4px);}
+  .nav-icon{
+    width:44px;height:44px;flex:0 0 auto;border-radius:12px;
+    background:var(--red-main);display:flex;align-items:center;justify-content:center;color:var(--yellow-bright);
+  }
+  .nav-icon svg{width:22px;height:22px;}
+  .nav-text h3{color:var(--white);font-size:1.02rem;font-weight:700;}
+  .nav-text p{color:var(--text-muted);font-size:0.85rem;margin-top:2px;}
+
+  .roles-block{
+    background:linear-gradient(160deg, rgba(122,22,32,0.28), rgba(28,5,8,0.5));
+    border:1px solid rgba(244,180,0,0.15);border-radius:16px;
+    padding:22px;margin-bottom:22px;
+  }
+  .roles-block h3{color:var(--white);font-size:1rem;font-weight:700;margin-bottom:4px;}
+  .roles-block .hint{color:var(--text-muted);font-size:0.82rem;margin-bottom:16px;}
+  .role-select{
+    width:100%;padding:12px 14px;border-radius:10px;
+    background:rgba(0,0,0,0.3);border:1px solid rgba(244,180,0,0.25);
+    color:var(--white);font-family:'Tajawal', sans-serif;font-size:0.92rem;margin-bottom:14px;
+  }
+  .role-chips{display:flex;flex-wrap:wrap;gap:8px;min-height:20px;}
+  .role-chip{
+    display:flex;align-items:center;gap:8px;
+    background:rgba(244,180,0,0.12);border:1px solid rgba(244,180,0,0.35);
+    color:var(--yellow-bright);padding:7px 8px 7px 14px;border-radius:999px;font-size:0.85rem;
+  }
+  html[dir="ltr"] .role-chip{padding:7px 14px 7px 8px;}
+  .role-chip button{
+    background:rgba(244,180,0,0.25);border:none;color:var(--yellow-bright);
+    width:18px;height:18px;border-radius:50%;font-size:0.75rem;line-height:1;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .role-chip button:hover{background:var(--yellow);color:var(--bg-void);}
+
+  .save-bar{
+    position:sticky;bottom:20px;
+    display:none;
+    background:var(--bg-void);
+    border:1px solid rgba(244,180,0,0.3);
+    border-radius:14px;padding:16px 20px;
+    align-items:center;justify-content:space-between;gap:14px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+    margin-top:10px;
+  }
+  .save-bar.show{display:flex;}
+  .save-bar span{color:var(--text-soft);font-size:0.9rem;}
+  .save-bar .actions{display:flex;gap:10px;}
+  .btn-save, .btn-cancel{padding:10px 22px;border-radius:9px;border:none;font-weight:700;font-size:0.88rem;}
+  .btn-save{background:var(--yellow);color:var(--bg-void);}
+  .btn-cancel{background:transparent;border:1.5px solid var(--text-muted);color:var(--text-muted);}
+
+  .loading-text{color:var(--text-muted);font-size:0.9rem;}
 </style>
 </head>
 <body>
-  <h1>إدارة سيرفر <span id="gid">—</span></h1>
-  <p>هذي صفحة مبدئية لإدارة السيرفر. الإعدادات التفصيلية (الحماية، الأوامر، السجلات...) بنبنيها بالخطوة الجاية.</p>
-  <a href="Dashboard.html">الرجوع لكل السيرفرات</a>
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get('guild');
-    if (id) document.getElementById('gid').textContent = id;
-  </script>
+
+<header>
+  <div class="header-left">
+    <button class="chip-btn" id="profileTrigger">
+      <img id="profileAvatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="">
+      <span id="profileName">...</span>
+    </button>
+    <div class="dropdown" id="profileDropdown">
+      <a class="dropdown-item" href="Dashboard.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5"/></svg>
+        <span data-i18n="menu_dashboard">Dashboard</span>
+      </a>
+      <button class="dropdown-item" id="langToggle" style="width:100%;text-align:right;background:none;border:none;">
+        <span class="flag" id="langFlag">🇬🇧</span>
+        <span id="langLabel">English</span>
+      </button>
+      <a class="dropdown-item danger" href="/api/logout">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+        <span data-i18n="menu_logout">تسجيل الخروج</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="brand"><div class="mark">S</div>Safio</div>
+
+  <div class="header-right">
+    <button class="chip-btn" id="guildTrigger">
+      <span id="currentGuildName" data-i18n="loading">جاري التحميل...</span>
+      <div class="g-mini-icon" id="currentGuildIcon">S</div>
+    </button>
+    <div class="dropdown" id="guildDropdown"></div>
+  </div>
+</header>
+
+<main>
+  <h1 class="page-title" data-i18n="overview">نظرة عامة</h1>
+
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card">
+      <div class="label" data-i18n="balance_label">رصيد Safio</div>
+      <div class="value" id="balanceValue">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label" data-i18n="level_label">المستوى</div>
+      <div class="value" id="levelValue">1</div>
+      <div class="value small-note" id="xpNote" data-i18n="xp_note">0 / 100 XP</div>
+    </div>
+    <div class="stat-card">
+      <div class="label" data-i18n="rank_label">الترتيب</div>
+      <div class="value" id="rankValue">—</div>
+    </div>
+  </div>
+
+  <div class="section-title" data-i18n="sections_title">أقسام الإدارة</div>
+  <div class="nav-cards" id="navCards">
+    <a class="nav-card" href="#" data-page="Autores.html">
+      <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+      <div class="nav-text">
+        <h3 data-i18n="nav_autores">ردود تلقائية</h3>
+        <p data-i18n="nav_autores_desc">جاوب أعضائك تلقائيًا على كلمات معينة</p>
+      </div>
+    </a>
+    <a class="nav-card" href="#" data-page="General.html">
+      <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+      <div class="nav-text">
+        <h3 data-i18n="nav_general">أوامر عامة</h3>
+        <p data-i18n="nav_general_desc">إعدادات الأوامر الأساسية للبوت</p>
+      </div>
+    </a>
+    <a class="nav-card" href="#" data-page="Modera.html">
+      <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z"/></svg></div>
+      <div class="nav-text">
+        <h3 data-i18n="nav_modera">أوامر الإشراف</h3>
+        <p data-i18n="nav_modera_desc">الحماية والبان والكيك والتحذيرات</p>
+      </div>
+    </a>
+    <a class="nav-card" href="#" data-page="Welcome.html">
+      <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <div class="nav-text">
+        <h3 data-i18n="nav_welcome">الترحيب</h3>
+        <p data-i18n="nav_welcome_desc">رسالة ترحيب الأعضاء الجدد</p>
+      </div>
+    </a>
+  </div>
+
+  <div class="section-title" data-i18n="autoroles_title">الرولات التلقائية</div>
+
+  <div class="roles-block">
+    <h3 data-i18n="autoroles_bots">الرولات التلقائية للبوتات</h3>
+    <p class="hint" data-i18n="autoroles_bots_hint">يُعطى تلقائيًا لأي بوت ينضم للسيرفر</p>
+    <select class="role-select" id="botRoleSelect">
+      <option value="" data-i18n="select_role">اختر رول لإضافته...</option>
+    </select>
+    <div class="role-chips" id="botRoleChips"></div>
+  </div>
+  <div class="roles-block">
+    <h3 data-i18n="autoroles_members">الرولات التلقائية للأعضاء</h3>
+    <p class="hint" data-i18n="autoroles_members_hint">يُعطى تلقائيًا لأي عضو جديد ينضم للسيرفر</p>
+    <select class="role-select" id="memberRoleSelect">
+      <option value="" data-i18n="select_role">اختر رول لإضافته...</option>
+    </select>
+    <div class="role-chips" id="memberRoleChips"></div>
+  </div>
+
+  <div class="save-bar" id="saveBar">
+    <span data-i18n="unsaved_changes">فيه تغييرات غير محفوظة</span>
+    <div class="actions">
+      <button class="btn-cancel" id="cancelBtn" data-i18n="cancel_btn">إلغاء</button>
+      <button class="btn-save" id="saveBtn" data-i18n="save_btn">حفظ التغييرات</button>
+    </div>
+  </div>
+</main>
+
+<script>
+  const T = {
+    ar: {
+      menu_dashboard: "Dashboard", menu_logout: "تسجيل الخروج", loading: "جاري التحميل...",
+      overview: "نظرة عامة", balance_label: "رصيد Safio", level_label: "المستوى",
+      rank_label: "الترتيب", sections_title: "أقسام الإدارة",
+      nav_autores: "ردود تلقائية", nav_autores_desc: "جاوب أعضائك تلقائيًا على كلمات معينة",
+      nav_general: "أوامر عامة", nav_general_desc: "إعدادات الأوامر الأساسية للبوت",
+      nav_modera: "أوامر الإشراف", nav_modera_desc: "الحماية والبان والكيك والتحذيرات",
+      nav_welcome: "الترحيب", nav_welcome_desc: "رسالة ترحيب الأعضاء الجدد",
+      autoroles_title: "الرولات التلقائية",
+      autoroles_bots: "الرولات التلقائية للبوتات", autoroles_bots_hint: "يُعطى تلقائيًا لأي بوت ينضم للسيرفر",
+      autoroles_members: "الرولات التلقائية للأعضاء", autoroles_members_hint: "يُعطى تلقائيًا لأي عضو جديد ينضم للسيرفر",
+      select_role: "اختر رول لإضافته...", unsaved_changes: "فيه تغييرات غير محفوظة",
+      cancel_btn: "إلغاء", save_btn: "حفظ التغييرات",
+      switch_server: "بدّل السيرفر", your_servers: "سيرفراتك"
+    },
+    en: {
+      menu_dashboard: "Dashboard", menu_logout: "Logout", loading: "Loading...",
+      overview: "Overview", balance_label: "Safio Balance", level_label: "Level",
+      rank_label: "Rank", sections_title: "Management Sections",
+      nav_autores: "Auto Responder", nav_autores_desc: "Automatically reply to specific keywords",
+      nav_general: "General", nav_general_desc: "Basic bot command settings",
+      nav_modera: "Moderation", nav_modera_desc: "Protection, bans, kicks and warnings",
+      nav_welcome: "Welcome", nav_welcome_desc: "Welcome message for new members",
+      autoroles_title: "Auto Roles",
+      autoroles_bots: "Bot Auto Roles", autoroles_bots_hint: "Given automatically to any bot that joins",
+      autoroles_members: "Member Auto Roles", autoroles_members_hint: "Given automatically to any new member",
+      select_role: "Select a role to add...", unsaved_changes: "You have unsaved changes",
+      cancel_btn: "Cancel", save_btn: "Save Changes",
+      switch_server: "Switch server", your_servers: "Your servers"
+    }
+  };
+
+  function getCookie(name){
+    const m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return m ? m[2] : null;
+  }
+  function setCookie(name, value){
+    document.cookie = `${name}=${value};path=/;max-age=31536000`;
+  }
+
+  let lang = getCookie('safio_lang') || 'ar';
+
+  function applyLang(){
+    document.getElementById('htmlRoot').setAttribute('lang', lang);
+    document.getElementById('htmlRoot').setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (T[lang][key]) el.textContent = T[lang][key];
+    });
+    const flag = document.getElementById('langFlag');
+    const label = document.getElementById('langLabel');
+    if (lang === 'ar'){ flag.textContent = '🇬🇧'; label.textContent = 'English'; }
+    else { flag.textContent = '🇸🇦'; label.textContent = 'العربية'; }
+  }
+
+  document.getElementById('langToggle').addEventListener('click', () => {
+    lang = lang === 'ar' ? 'en' : 'ar';
+    setCookie('safio_lang', lang);
+    applyLang();
+  });
+
+  applyLang();
+
+  function toggleDropdown(id, others){
+    const el = document.getElementById(id);
+    const willOpen = !el.classList.contains('open');
+    others.forEach(o => document.getElementById(o).classList.remove('open'));
+    el.classList.toggle('open', willOpen);
+  }
+  document.getElementById('profileTrigger').addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleDropdown('profileDropdown', ['guildDropdown']);
+  });
+  document.getElementById('guildTrigger').addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleDropdown('guildDropdown', ['profileDropdown']);
+  });
+  document.addEventListener('click', () => {
+    document.getElementById('profileDropdown').classList.remove('open');
+    document.getElementById('guildDropdown').classList.remove('open');
+  });
+
+  const urlParams = new URLSearchParams(window.location.search);
+  let currentGuildId = urlParams.get('guild');
+
+  function guildIconHtml(g){
+    return g.icon ? `<img src="${g.icon}" alt="">` : (g.name ? g.name.charAt(0).toUpperCase() : 'S');
+  }
+
+  fetch('/api/guilds')
+    .then(r => { if(!r.ok) throw new Error('unauthorized'); return r.json(); })
+    .then(({ user, guilds }) => {
+      const avatarUrl = user.avatar
+        ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+        : `https://cdn.discordapp.com/embed/avatars/0.png`;
+      document.getElementById('profileAvatar').src = avatarUrl;
+      document.getElementById('profileName').textContent = user.username;
+
+      if (!guilds || guilds.length === 0){
+        window.location.href = 'Dashboard.html';
+        return;
+      }
+
+      if (!currentGuildId || !guilds.find(g => g.id === currentGuildId)){
+        currentGuildId = guilds[0].id;
+      }
+      const current = guilds.find(g => g.id === currentGuildId);
+      document.getElementById('currentGuildName').textContent = current.name;
+      document.getElementById('currentGuildIcon').innerHTML = guildIconHtml(current);
+
+      const dropdown = document.getElementById('guildDropdown');
+      const currentBlock = document.createElement('div');
+      currentBlock.className = 'dropdown-current';
+      currentBlock.innerHTML = `
+        <div class="g-mini-icon">${guildIconHtml(current)}</div>
+        <div>
+          <small data-i18n="your_servers">${T[lang].your_servers}</small>
+          <div style="color:var(--white);font-weight:700;">${current.name}</div>
+        </div>
+      `;
+      dropdown.appendChild(currentBlock);
+
+      guilds.forEach(g => {
+        const opt = document.createElement('a');
+        opt.className = 'guild-option' + (g.id === currentGuildId ? ' active' : '');
+        opt.href = `home.html?guild=${g.id}`;
+        opt.innerHTML = `<div class="g-mini-icon">${guildIconHtml(g)}</div><span>${g.name}</span>`;
+        dropdown.appendChild(opt);
+      });
+
+      document.querySelectorAll('#navCards .nav-card').forEach(card => {
+        card.href = `${card.getAttribute('data-page')}?guild=${currentGuildId}`;
+      });
+
+      loadStats();
+      loadRolesAndAutoroles();
+    })
+    .catch(() => { window.location.href = 'index.html'; });
+
+  function loadStats(){
+    fetch(`/api/guild/${currentGuildId}/stats`)
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('balanceValue').textContent = (data.balance ?? 0).toLocaleString();
+        document.getElementById('levelValue').textContent = data.level ?? 1;
+        document.getElementById('xpNote').textContent = `${data.xp ?? 0} / ${data.xpNeeded ?? 100} XP`;
+        document.getElementById('rankValue').textContent = data.rank
+          ? `#${data.rank} / ${data.totalMembers}`
+          : '—';
+      })
+      .catch(() => {});
+  }
+
+  let allRoles = [];
+  let savedState = { botRoles: [], memberRoles: [] };
+  let currentState = { botRoles: [], memberRoles: [] };
+
+  function loadRolesAndAutoroles(){
+    Promise.all([
+      fetch(`/api/guild/${currentGuildId}/roles`).then(r => r.json()),
+      fetch(`/api/guild/${currentGuildId}/autoroles`).then(r => r.json())
+    ]).then(([roles, autoroles]) => {
+      allRoles = Array.isArray(roles) ? roles : [];
+      savedState = {
+        botRoles: autoroles.botRoles || [],
+        memberRoles: autoroles.memberRoles || []
+      };
+      currentState = JSON.parse(JSON.stringify(savedState));
+
+      fillSelect('botRoleSelect', allRoles);
+      fillSelect('memberRoleSelect', allRoles);
+      renderChips('bot');
+      renderChips('member');
+    }).catch(() => {});
+  }
+
+  function fillSelect(selectId, roles){
+    const select = document.getElementById(selectId);
+    const placeholder = select.firstElementChild;
+    select.innerHTML = '';
+    select.appendChild(placeholder);
+    roles.forEach(role => {
+      const opt = document.createElement('option');
+      opt.value = role.id;
+      opt.textContent = role.name;
+      select.appendChild(opt);
+    });
+  }
+
+  function renderChips(type){
+    const key = type === 'bot' ? 'botRoles' : 'memberRoles';
+    const container = document.getElementById(type === 'bot' ? 'botRoleChips' : 'memberRoleChips');
+    container.innerHTML = '';
+    currentState[key].forEach(roleId => {
+      const role = allRoles.find(r => r.id === roleId);
+      if (!role) return;
+      const chip = document.createElement('div');
+      chip.className = 'role-chip';
+      chip.innerHTML = `<span>${role.name}</span><button aria-label="remove">✕</button>`;
+      chip.querySelector('button').addEventListener('click', () => {
+        currentState[key] = currentState[key].filter(id => id !== roleId);
+        renderChips(type);
+        checkDirty();
+      });
+      container.appendChild(chip);
+    });
+  }
+
+  document.getElementById('botRoleSelect').addEventListener('change', (e) => {
+    const id = e.target.value;
+    if (id && !currentState.botRoles.includes(id)) {
+      currentState.botRoles.push(id);
+      renderChips('bot');
+      checkDirty();
+    }
+    e.target.value = '';
+  });
+
+  document.getElementById('memberRoleSelect').addEventListener('change', (e) => {
+    const id = e.target.value;
+    if (id && !currentState.memberRoles.includes(id)) {
+      currentState.memberRoles.push(id);
+      renderChips('member');
+      checkDirty();
+    }
+    e.target.value = '';
+  });
+
+  function checkDirty(){
+    const dirty = JSON.stringify(currentState) !== JSON.stringify(savedState);
+    document.getElementById('saveBar').classList.toggle('show', dirty);
+  }
+
+  document.getElementById('cancelBtn').addEventListener('click', () => {
+    currentState = JSON.parse(JSON.stringify(savedState));
+    renderChips('bot');
+    renderChips('member');
+    checkDirty();
+  });
+
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    fetch(`/api/guild/${currentGuildId}/autoroles`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(currentState)
+    })
+      .then(r => r.json())
+      .then(() => {
+        savedState = JSON.parse(JSON.stringify(currentState));
+        checkDirty();
+      });
+  });
+</script>
+
 </body>
 </html>
