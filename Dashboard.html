@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Safio | Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-void:#1c0508;
+    --red-deep:#3d0c10;
+    --red-main:#7a1620;
+    --red-bright:#a8232f;
+    --yellow:#f4b400;
+    --yellow-bright:#ffd447;
+    --white:#ffffff;
+    --text-soft:#f2e4d8;
+    --text-muted:#caa79a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:'Tajawal', sans-serif;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(168,35,47,0.3), transparent 45%),
+      linear-gradient(160deg, var(--bg-void) 0%, var(--red-deep) 60%, var(--bg-void) 100%);
+    color:var(--text-soft);
+    min-height:100vh;
+  }
+  h1,h2,.brand{font-family:'Rubik', sans-serif;}
+  a{text-decoration:none;color:inherit;}
+
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px 6%;border-bottom:1px solid rgba(244,180,0,0.15);
+  }
+  .brand{display:flex;align-items:center;gap:12px;font-weight:900;font-size:1.4rem;color:var(--white);}
+  .brand .mark{
+    width:36px;height:36px;background:var(--yellow);
+    clip-path:polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+    display:flex;align-items:center;justify-content:center;color:var(--bg-void);font-weight:900;
+  }
+  .user-chip{
+    display:flex;align-items:center;gap:12px;
+    background:rgba(0,0,0,0.25);border:1px solid rgba(244,180,0,0.2);
+    padding:8px 16px 8px 8px;border-radius:999px;
+  }
+  .user-chip img{width:32px;height:32px;border-radius:50%;}
+  .user-chip span{font-weight:500;font-size:0.92rem;}
+  .logout{color:var(--text-muted);font-size:0.85rem;margin-right:14px;}
+  .logout:hover{color:var(--yellow-bright);}
+
+  main{padding:56px 6% 100px;}
+  .page-head{max-width:640px;margin-bottom:44px;}
+  .page-head h1{font-size:clamp(1.8rem,3.5vw,2.4rem);color:var(--white);font-weight:900;}
+  .page-head p{color:var(--text-muted);margin-top:10px;line-height:1.8;}
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+    gap:24px;
+  }
+
+  .card{
+    background:linear-gradient(160deg, rgba(122,22,32,0.35), rgba(28,5,8,0.6));
+    border:1px solid rgba(244,180,0,0.15);
+    border-radius:16px;padding:26px;
+    display:flex;flex-direction:column;gap:16px;
+    opacity:0;transform:translateY(14px);
+    animation:rise 0.5s ease forwards;
+  }
+  @keyframes rise{to{opacity:1;transform:translateY(0);}}
+
+  .card-top{display:flex;align-items:center;gap:14px;}
+  .g-icon{
+    width:52px;height:52px;border-radius:14px;background:var(--red-main);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:900;color:var(--yellow-bright);font-size:1.2rem;
+    overflow:hidden;flex:0 0 auto;
+  }
+  .g-icon img{width:100%;height:100%;object-fit:cover;}
+
+  .g-info{min-width:0;}
+  .g-info h3{
+    color:var(--white);font-size:1.05rem;font-weight:700;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .owner-tag{color:var(--yellow);font-size:0.78rem;font-weight:700;margin-top:3px;display:inline-block;}
+
+  .card-btn{
+    margin-top:auto;text-align:center;padding:12px;border-radius:10px;
+    font-weight:700;font-size:0.95rem;
+    transition:transform 0.15s ease, opacity 0.15s ease;
+  }
+  .card-btn:hover{transform:translateY(-2px);}
+  .card-btn.manage{background:var(--white);color:var(--red-deep);}
+  .card-btn.invite{background:transparent;border:2px solid var(--yellow);color:var(--yellow-bright);}
+  .card-btn.invite:hover{background:var(--yellow);color:var(--bg-void);}
+
+  .empty, .loading{color:var(--text-muted);text-align:center;padding:80px 20px;font-size:1rem;}
+  .loading::after{
+    content:"";display:inline-block;width:16px;height:16px;margin-right:10px;
+    border:2px solid var(--yellow-bright);border-top-color:transparent;border-radius:50%;
+    animation:spin 0.7s linear infinite;vertical-align:middle;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><div class="mark">S</div>Safio</div>
+  <div id="userArea"></div>
+</header>
+
+<main>
+  <div class="page-head">
+    <h1>سيرفراتك</h1>
+    <p>هذي كل السيرفرات اللي أنت مالكها أو عندك صلاحية أدمن فيها.</p>
+  </div>
+
+  <div id="content" class="loading">جاري تحميل سيرفراتك</div>
+</main>
+
+<script>
+  const INVITE_BASE = "https://discord.com/oauth2/authorize?client_id=1543918099252908112&permissions=8&integration_type=0&scope=bot+applications.commands";
+
+  fetch('/api/guilds')
+    .then(r => {
+      if (!r.ok) throw new Error('unauthorized');
+      return r.json();
+    })
+    .then(({ user, guilds }) => {
+      renderUser(user);
+      renderGuilds(guilds);
+    })
+    .catch(() => {
+      window.location.href = 'index.html';
+    });
+
+  function renderUser(user){
+    const avatarUrl = user.avatar
+      ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+      : `https://cdn.discordapp.com/embed/avatars/0.png`;
+    document.getElementById('userArea').innerHTML = `
+      <div style="display:flex;align-items:center;">
+        <a class="logout" href="/api/logout">تسجيل الخروج</a>
+        <div class="user-chip">
+          <img src="${avatarUrl}" alt="">
+          <span>${user.username}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderGuilds(guilds){
+    const content = document.getElementById('content');
+    if (!guilds || guilds.length === 0){
+      content.className = 'empty';
+      content.textContent = 'ما عندك سيرفرات تملكها أو عندك صلاحية أدمن فيها.';
+      return;
+    }
+
+    content.className = 'grid';
+    content.innerHTML = guilds.map((g, i) => {
+      const initial = g.name ? g.name.charAt(0).toUpperCase() : 'S';
+      const iconHtml = g.icon
+        ? `<img src="${g.icon}" alt="">`
+        : initial;
+      const ownerTag = g.owner ? `<span class="owner-tag">Owner</span>` : '';
+      const btnHtml = g.botInGuild
+        ? `<a class="card-btn manage" href="home.html?guild=${g.id}">Manage</a>`
+        : `<a class="card-btn invite" target="_blank" href="${INVITE_BASE}&guild_id=${g.id}&disable_guild_select=true">دعوة البوت</a>`;
+
+      return `
+        <div class="card" style="animation-delay:${i * 0.05}s">
+          <div class="card-top">
+            <div class="g-icon">${iconHtml}</div>
+            <div class="g-info">
+              <h3>${g.name}</h3>
+              ${ownerTag}
+            </div>
+          </div>
+          ${btnHtml}
+        </div>
+      `;
+    }).join('');
+  }
+</script>
+
+</body>
+</html>
