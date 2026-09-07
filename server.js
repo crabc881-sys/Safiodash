@@ -4,7 +4,7 @@ const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const fs = require('fs');
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 
 const app = express();
 
@@ -198,6 +198,131 @@ app.post('/api/guild/:guildId/autoroles', (req, res) => {
   };
   saveAutorolesData(all);
   res.json({ success: true });
+});
+
+app.get('/api/guild/:guildId/channels', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const r = await fetch(`https://discord.com/api/guilds/${req.params.guildId}/channels`, {
+      headers: { Authorization: `Bot ${BOT_TOKEN}` }
+    });
+    if (!r.ok) return res.status(r.status).json({ error: 'discord_error' });
+    const channels = await r.json();
+    const textChannels = channels
+      .filter(c => c.type === 0)
+      .sort((a, b) => a.position - b.position)
+      .map(c => ({ id: c.id, name: c.name }));
+    res.json(textChannels);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'channels_failed' });
+  }
+});
+
+app.get('/api/guild/:guildId/autoresponders', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const client = await getMongo();
+    const col = client.db('test').collection('autoresponders');
+    const list = await col.find({ guildId: req.params.guildId }).toArray();
+    res.json(list.map(d => ({ ...d, _id: d._id.toString() })));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'fetch_failed' });
+  }
+});
+
+app.post('/api/guild/:guildId/autoresponders', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const { message, reply, enabledRoles, disabledRoles, enabledChannels, disabledChannels } = req.body;
+    if (!message || !reply) return res.status(400).json({ error: 'missing_fields' });
+    const client = await getMongo();
+    const col = client.db('test').collection('autoresponders');
+    const doc = {
+      guildId: req.params.guildId,
+      message: String(message),
+      reply: String(reply),
+      enabledRoles: Array.isArray(enabledRoles) ? enabledRoles : [],
+      disabledRoles: Array.isArray(disabledRoles) ? disabledRoles : [],
+      enabledChannels: Array.isArray(enabledChannels) ? enabledChannels : [],
+      disabledChannels: Array.isArray(disabledChannels) ? disabledChannels : [],
+      createdAt: new Date()
+    };
+    const result = await col.insertOne(doc);
+    res.json({ ...doc, _id: result.insertedId.toString() });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'create_failed' });
+  }
+});
+
+app.put('/api/guild/:guildId/autoresponders/:id', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const { message, reply, enabledRoles, disabledRoles, enabledChannels, disabledChannels } = req.body;
+    const client = await getMongo();
+    const col = client.db('test').collection('autoresponders');
+    await col.updateOne(
+      { _id: new ObjectId(req.params.id), guildId: req.params.guildId },
+      { $set: {
+          message: String(message),
+          reply: String(reply),
+          enabledRoles: Array.isArray(enabledRoles) ? enabledRoles : [],
+          disabledRoles: Array.isArray(disabledRoles) ? disabledRoles : [],
+          enabledChannels: Array.isArray(enabledChannels) ? enabledChannels : [],
+          disabledChannels: Array.isArray(disabledChannels) ? disabledChannels : []
+      } }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'update_failed' });
+  }
+});
+
+app.delete('/api/guild/:guildId/autoresponders/:id', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const client = await getMongo();
+    const col = client.db('test').collection('autoresponders');
+    await col.deleteOne({ _id: new ObjectId(req.params.id), guildId: req.params.guildId });
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'delete_failed' });
+  }
+});
+
+app.get('/api/guild/:guildId/autoresponder-status', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const client = await getMongo();
+    const col = client.db('test').collection('guildsettings');
+    const doc = await col.findOne({ guildId: req.params.guildId });
+    res.json({ enabled: doc ? doc.autoresponderEnabled !== false : true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'status_failed' });
+  }
+});
+
+app.post('/api/guild/:guildId/autoresponder-status', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const { enabled } = req.body;
+    const client = await getMongo();
+    const col = client.db('test').collection('guildsettings');
+    await col.updateOne(
+      { guildId: req.params.guildId },
+      { $set: { autoresponderEnabled: !!enabled } },
+      { upsert: true }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'status_update_failed' });
+  }
 });
 
 app.listen(PORT, () => console.log(`Safio server running on http://localhost:${PORT}`));
