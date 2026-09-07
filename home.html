@@ -115,6 +115,67 @@
   .guild-option .g-mini-icon img{width:100%;height:100%;object-fit:cover;}
   .guild-option.active{background:rgba(244,180,0,0.12);color:var(--yellow-bright);}
 
+  .sidebar-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.55);
+    opacity:0;pointer-events:none;transition:opacity 0.25s ease;z-index:90;
+  }
+  .sidebar-overlay.open{opacity:1;pointer-events:auto;}
+
+  .sidebar{
+    position:fixed;top:0;left:0;height:100vh;width:290px;max-width:82vw;
+    background:linear-gradient(180deg, rgba(28,5,8,0.98), rgba(58,12,17,0.98));
+    border-right:1px solid rgba(244,180,0,0.2);
+    transform:translateX(-100%);
+    transition:transform 0.28s ease;
+    z-index:95;overflow-y:auto;
+  }
+  .sidebar.open{transform:translateX(0);}
+
+  .sidebar-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px;border-bottom:1px solid rgba(244,180,0,0.12);
+  }
+  .sidebar-head .brand{font-size:1.1rem;}
+  .sidebar-close{
+    width:32px;height:32px;border-radius:8px;background:rgba(0,0,0,0.3);
+    border:none;color:var(--text-muted);font-size:1rem;
+  }
+
+  .sidebar-guild{
+    display:flex;align-items:center;gap:12px;
+    margin:16px;padding:12px 14px;border-radius:12px;
+    background:rgba(0,0,0,0.25);border:1px solid rgba(244,180,0,0.25);
+  }
+  .sidebar-guild .g-mini-icon{width:34px;height:34px;border-radius:9px;background:var(--red-main);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--yellow-bright);overflow:hidden;flex:0 0 auto;}
+  .sidebar-guild .g-mini-icon img{width:100%;height:100%;object-fit:cover;}
+  .sidebar-guild span{font-weight:700;color:var(--white);font-size:0.95rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .sidebar-guild svg{width:16px;height:16px;color:var(--text-muted);transition:transform 0.2s;flex:0 0 auto;}
+  .sidebar-guild.expanded svg{transform:rotate(180deg);}
+
+  .sidebar-guild-list{
+    max-height:0;overflow:hidden;margin:0 16px;
+    transition:max-height 0.25s ease;
+  }
+  .sidebar-guild-list.expanded{max-height:260px;overflow-y:auto;margin-bottom:12px;}
+  .sidebar-guild-list .guild-option{border-radius:10px;border-bottom:none;margin-bottom:4px;}
+
+  .sidebar-section-label{
+    padding:0 20px;margin:18px 0 8px;
+    color:var(--text-muted);font-size:0.75rem;font-weight:700;letter-spacing:0.5px;
+  }
+
+  .sidebar-nav-item{
+    display:flex;align-items:center;gap:14px;
+    padding:13px 20px;color:var(--text-soft);font-size:0.95rem;
+    border-bottom:1px solid rgba(244,180,0,0.06);
+  }
+  .sidebar-nav-item:hover{background:rgba(244,180,0,0.07);}
+  .sidebar-nav-item svg{width:19px;height:19px;color:var(--yellow-bright);flex:0 0 auto;}
+  .sidebar-nav-item .chev{width:15px;height:15px;color:var(--text-muted);margin-right:auto;}
+  html[dir="ltr"] .sidebar-nav-item .chev{margin-right:0;margin-left:auto;transform:rotate(180deg);}
+  html[dir="ltr"] .sidebar{left:auto;right:0;border-right:none;border-left:1px solid rgba(244,180,0,0.2);transform:translateX(100%);}
+  html[dir="ltr"] .sidebar.open{transform:translateX(0);}
+
   main{padding:36px 5% 100px;max-width:1000px;margin:0 auto;}
   .page-title{font-size:clamp(1.6rem,3.2vw,2.1rem);color:var(--white);font-weight:900;margin-bottom:26px;}
 
@@ -131,22 +192,6 @@
   .stat-card .value.small-note{font-size:1rem;color:var(--text-muted);font-family:'Tajawal', sans-serif;font-weight:500;margin-top:4px;}
 
   .section-title{color:var(--white);font-weight:700;font-size:1.1rem;margin:36px 0 16px;}
-  .nav-cards{display:flex;flex-direction:column;gap:12px;margin-bottom:40px;}
-  .nav-card{
-    display:flex;align-items:center;gap:16px;
-    background:linear-gradient(160deg, rgba(122,22,32,0.25), rgba(28,5,8,0.5));
-    border:1px solid rgba(244,180,0,0.12);border-radius:14px;
-    padding:18px 20px;transition:transform 0.15s ease, border-color 0.15s ease;
-  }
-  .nav-card:hover{transform:translateX(-4px);border-color:rgba(244,180,0,0.4);}
-  html[dir="ltr"] .nav-card:hover{transform:translateX(4px);}
-  .nav-icon{
-    width:44px;height:44px;flex:0 0 auto;border-radius:12px;
-    background:var(--red-main);display:flex;align-items:center;justify-content:center;color:var(--yellow-bright);
-  }
-  .nav-icon svg{width:22px;height:22px;}
-  .nav-text h3{color:var(--white);font-size:1.02rem;font-weight:700;}
-  .nav-text p{color:var(--text-muted);font-size:0.85rem;margin-top:2px;}
 
   .roles-block{
     background:linear-gradient(160deg, rgba(122,22,32,0.28), rgba(28,5,8,0.5));
@@ -198,6 +243,9 @@
 
 <header>
   <div class="header-left">
+    <button class="hamburger" id="sidebarTrigger">
+      <span></span><span></span><span></span>
+    </button>
     <button class="chip-btn" id="profileTrigger">
       <img id="profileAvatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="">
       <span id="profileName">...</span>
@@ -248,38 +296,6 @@
     </div>
   </div>
 
-  <div class="section-title" data-i18n="sections_title">أقسام الإدارة</div>
-  <div class="nav-cards" id="navCards">
-    <a class="nav-card" href="#" data-page="Autores.html">
-      <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-      <div class="nav-text">
-        <h3 data-i18n="nav_autores">ردود تلقائية</h3>
-        <p data-i18n="nav_autores_desc">جاوب أعضائك تلقائيًا على كلمات معينة</p>
-      </div>
-    </a>
-    <a class="nav-card" href="#" data-page="General.html">
-      <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
-      <div class="nav-text">
-        <h3 data-i18n="nav_general">أوامر عامة</h3>
-        <p data-i18n="nav_general_desc">إعدادات الأوامر الأساسية للبوت</p>
-      </div>
-    </a>
-    <a class="nav-card" href="#" data-page="Modera.html">
-      <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z"/></svg></div>
-      <div class="nav-text">
-        <h3 data-i18n="nav_modera">أوامر الإشراف</h3>
-        <p data-i18n="nav_modera_desc">الحماية والبان والكيك والتحذيرات</p>
-      </div>
-    </a>
-    <a class="nav-card" href="#" data-page="Welcome.html">
-      <div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-      <div class="nav-text">
-        <h3 data-i18n="nav_welcome">الترحيب</h3>
-        <p data-i18n="nav_welcome_desc">رسالة ترحيب الأعضاء الجدد</p>
-      </div>
-    </a>
-  </div>
-
   <div class="section-title" data-i18n="autoroles_title">الرولات التلقائية</div>
 
   <div class="roles-block">
@@ -290,6 +306,7 @@
     </select>
     <div class="role-chips" id="botRoleChips"></div>
   </div>
+
   <div class="roles-block">
     <h3 data-i18n="autoroles_members">الرولات التلقائية للأعضاء</h3>
     <p class="hint" data-i18n="autoroles_members_hint">يُعطى تلقائيًا لأي عضو جديد ينضم للسيرفر</p>
@@ -307,6 +324,41 @@
     </div>
   </div>
 </main>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<aside class="sidebar" id="sidebarPanel">
+  <div class="sidebar-head">
+    <div class="brand"><div class="mark">S</div>Safio</div>
+    <button class="sidebar-close" id="sidebarClose">✕</button>
+  </div>
+
+  <div class="sidebar-guild" id="sidebarGuildTrigger">
+    <div class="g-mini-icon" id="sidebarGuildIcon">S</div>
+    <span id="sidebarGuildName" data-i18n="loading">جاري التحميل...</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+  </div>
+  <div class="sidebar-guild-list" id="sidebarGuildList"></div>
+
+  <a class="sidebar-nav-item" href="#" data-page="Autores.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span data-i18n="nav_autores">ردود تلقائية</span>
+    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+  </a>
+  <a class="sidebar-nav-item" href="#" data-page="General.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    <span data-i18n="nav_general">أوامر عامة</span>
+    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+  </a>
+  <a class="sidebar-nav-item" href="#" data-page="Welcome.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span data-i18n="nav_welcome">الترحيب</span>
+    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+  </a>
+  <a class="sidebar-nav-item" href="#" data-page="Modera.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z"/></svg>
+    <span data-i18n="nav_modera">أوامر الإشراف</span>
+    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+  </a>
+</aside>
 
 <script>
   const T = {
@@ -392,6 +444,26 @@
     document.getElementById('guildDropdown').classList.remove('open');
   });
 
+  const sidebarPanel = document.getElementById('sidebarPanel');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+  function openSidebar(){
+    sidebarPanel.classList.add('open');
+    sidebarOverlay.classList.add('open');
+  }
+  function closeSidebar(){
+    sidebarPanel.classList.remove('open');
+    sidebarOverlay.classList.remove('open');
+  }
+  document.getElementById('sidebarTrigger').addEventListener('click', openSidebar);
+  document.getElementById('sidebarClose').addEventListener('click', closeSidebar);
+  sidebarOverlay.addEventListener('click', closeSidebar);
+
+  document.getElementById('sidebarGuildTrigger').addEventListener('click', () => {
+    document.getElementById('sidebarGuildTrigger').classList.toggle('expanded');
+    document.getElementById('sidebarGuildList').classList.toggle('expanded');
+  });
+
   const urlParams = new URLSearchParams(window.location.search);
   let currentGuildId = urlParams.get('guild');
 
@@ -440,15 +512,26 @@
         dropdown.appendChild(opt);
       });
 
-      document.querySelectorAll('#navCards .nav-card').forEach(card => {
-        card.href = `${card.getAttribute('data-page')}?guild=${currentGuildId}`;
+      document.getElementById('sidebarGuildIcon').innerHTML = guildIconHtml(current);
+      document.getElementById('sidebarGuildName').textContent = current.name;
+
+      const sidebarGuildList = document.getElementById('sidebarGuildList');
+      guilds.forEach(g => {
+        const opt = document.createElement('a');
+        opt.className = 'guild-option' + (g.id === currentGuildId ? ' active' : '');
+        opt.href = `home.html?guild=${g.id}`;
+        opt.innerHTML = `<div class="g-mini-icon">${guildIconHtml(g)}</div><span>${g.name}</span>`;
+        sidebarGuildList.appendChild(opt);
+      });
+
+      document.querySelectorAll('.sidebar-nav-item').forEach(item => {
+        item.href = `${item.getAttribute('data-page')}?guild=${currentGuildId}`;
       });
 
       loadStats();
       loadRolesAndAutoroles();
     })
     .catch(() => { window.location.href = 'index.html'; });
-
   function loadStats(){
     fetch(`/api/guild/${currentGuildId}/stats`)
       .then(r => r.json())
