@@ -325,4 +325,52 @@ app.post('/api/guild/:guildId/autoresponder-status', async (req, res) => {
   }
 });
 
+// --- Welcome & Leave Settings Routes ---
+
+app.get('/api/guild/:guildId/welcome-settings', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const client = await getMongo();
+    const col = client.db('test').collection('welcomesettings');
+    const doc = await col.findOne({ guildId: req.params.guildId });
+    res.json({
+      welcomeEnabled: doc?.welcomeEnabled || false,
+      welcomeMessage: doc?.welcomeMessage || '',
+      welcomeChannelId: doc?.welcomeChannelId || '',
+      leaveEnabled: doc?.leaveEnabled || false,
+      leaveMessage: doc?.leaveMessage || '',
+      leaveChannelId: doc?.leaveChannelId || ''
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'fetch_failed' });
+  }
+});
+
+app.post('/api/guild/:guildId/welcome-settings', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const { welcomeEnabled, welcomeMessage, welcomeChannelId, leaveEnabled, leaveMessage, leaveChannelId } = req.body;
+    const client = await getMongo();
+    const col = client.db('test').collection('welcomesettings');
+    await col.updateOne(
+      { guildId: req.params.guildId },
+      { $set: {
+          welcomeEnabled: !!welcomeEnabled,
+          welcomeMessage: String(welcomeMessage || ''),
+          welcomeChannelId: String(welcomeChannelId || ''),
+          leaveEnabled: !!leaveEnabled,
+          leaveMessage: String(leaveMessage || ''),
+          leaveChannelId: String(leaveChannelId || '')
+      } },
+      { upsert: true }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'update_failed' });
+  }
+});
+
+// تشغيل السيرفر
 app.listen(PORT, () => console.log(`Safio server running on http://localhost:${PORT}`));
