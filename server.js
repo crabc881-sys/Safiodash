@@ -372,5 +372,93 @@ app.post('/api/guild/:guildId/welcome-settings', async (req, res) => {
   }
 });
 
+// --- General Commands & Status Routes ---
+
+app.get('/api/guild/:guildId/general-status', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const client = await getMongo();
+    const col = client.db('test').collection('guildsettings');
+    const doc = await col.findOne({ guildId: req.params.guildId });
+    res.json({ enabled: doc ? doc.generalEnabled !== false : true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'status_failed' });
+  }
+});
+
+app.post('/api/guild/:guildId/general-status', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const { enabled } = req.body;
+    const client = await getMongo();
+    const col = client.db('test').collection('guildsettings');
+    await col.updateOne(
+      { guildId: req.params.guildId },
+      { $set: { generalEnabled: !!enabled } },
+      { upsert: true }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'status_update_failed' });
+  }
+});
+
+const GENERAL_COMMANDS_LIST = ['server', 'avatar', 'user', 'safio', 'ping', 'roles'];
+
+app.get('/api/guild/:guildId/general-commands', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const client = await getMongo();
+    const col = client.db('test').collection('generalcommands');
+    const docs = await col.find({ guildId: req.params.guildId }).toArray();
+
+    const result = GENERAL_COMMANDS_LIST.map(key => {
+      const found = docs.find(d => d.commandKey === key);
+      return found || {
+        commandKey: key,
+        enabled: true,
+        aliases: [key],
+        enabledRoles: [],
+        disabledRoles: [],
+        enabledChannels: [],
+        disabledChannels: []
+      };
+    });
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'fetch_failed' });
+  }
+});
+
+app.post('/api/guild/:guildId/general-commands/:commandKey', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  const { commandKey } = req.params;
+  if (!GENERAL_COMMANDS_LIST.includes(commandKey)) return res.status(400).json({ error: 'invalid_command' });
+  try {
+    const { enabled, aliases, enabledRoles, disabledRoles, enabledChannels, disabledChannels } = req.body;
+    const client = await getMongo();
+    const col = client.db('test').collection('generalcommands');
+    await col.updateOne(
+      { guildId: req.params.guildId, commandKey },
+      { $set: {
+          enabled: enabled !== false,
+          aliases: Array.isArray(aliases) && aliases.length ? aliases : [commandKey],
+          enabledRoles: Array.isArray(enabledRoles) ? enabledRoles : [],
+          disabledRoles: Array.isArray(disabledRoles) ? disabledRoles : [],
+          enabledChannels: Array.isArray(enabledChannels) ? enabledChannels : [],
+          disabledChannels: Array.isArray(disabledChannels) ? disabledChannels : []
+      } },
+      { upsert: true }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'update_failed' });
+  }
+});
+
 // تشغيل السيرفر
 app.listen(PORT, () => console.log(`Safio server running on http://localhost:${PORT}`));
