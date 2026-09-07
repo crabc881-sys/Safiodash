@@ -3,36 +3,264 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Safio | Autores</title>
+<title>Safio | الترحيب</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg-void:#1c0508; --red-deep:#3d0c10; --red-main:#7a1620;
-    --yellow:#f4b400; --yellow-bright:#ffd447; --white:#ffffff; --text-muted:#caa79a;
+    --yellow:#f4b400; --yellow-bright:#ffd447; --white:#ffffff;
+    --text-soft:#f2e4d8; --text-muted:#caa79a;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   body{
     font-family:'Tajawal', sans-serif;
-    background:linear-gradient(160deg, var(--bg-void), var(--red-deep));
-    color:var(--white); min-height:100vh;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    text-align:center;padding:40px;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(168,35,47,0.3), transparent 45%),
+      linear-gradient(160deg, var(--bg-void) 0%, var(--red-deep) 60%, var(--bg-void) 100%);
+    color:var(--text-soft);min-height:100vh;
   }
-  h1{font-family:'Rubik', sans-serif;font-weight:900;font-size:2.1rem;margin-bottom:14px;}
-  span{color:var(--yellow);}
-  p{color:var(--text-muted);max-width:480px;line-height:1.8;margin-bottom:28px;}
-  a{background:var(--white);color:var(--red-deep);padding:14px 32px;border-radius:10px;font-weight:700;text-decoration:none;}
+  h1,h2,.brand{font-family:'Rubik', sans-serif;}
+  a{text-decoration:none;color:inherit;}
+  button{font-family:'Tajawal', sans-serif;cursor:pointer;}
+
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 5%;border-bottom:1px solid rgba(244,180,0,0.15);
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.25rem;color:var(--white);}
+  .brand .mark{
+    width:32px;height:32px;background:var(--yellow);
+    clip-path:polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+    display:flex;align-items:center;justify-content:center;color:var(--bg-void);font-weight:900;font-size:0.9rem;
+  }
+  .back-link{display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:0.9rem;}
+  .back-link:hover{color:var(--yellow-bright);}
+
+  main{padding:30px 5% 130px;max-width:720px;margin:0 auto;}
+  .page-title{font-size:clamp(1.5rem,3vw,2rem);color:var(--white);font-weight:900;margin-bottom:24px;}
+
+  .switch{
+    width:46px;height:26px;border-radius:999px;background:rgba(255,255,255,0.15);
+    position:relative;border:1px solid rgba(244,180,0,0.3);flex:0 0 auto;
+  }
+  .switch .knob{
+    position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;
+    background:var(--text-muted);transition:all 0.2s ease;
+  }
+  .switch.on{background:rgba(244,180,0,0.25);}
+  .switch.on .knob{background:var(--yellow);right:calc(100% - 22px);}
+
+  .setting-card{
+    background:linear-gradient(160deg, rgba(122,22,32,0.3), rgba(28,5,8,0.55));
+    border:1px solid rgba(244,180,0,0.15);border-radius:16px;
+    margin-bottom:18px;overflow:hidden;
+  }
+  .setting-card-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px;
+  }
+  .setting-card-header h3{color:var(--white);font-size:1.05rem;font-weight:700;}
+
+  .card-body{max-height:0;overflow:hidden;transition:max-height 0.35s ease, padding 0.35s ease;padding:0 20px;}
+  .card-body.open{max-height:600px;padding:0 20px 20px;}
+
+  .field-label{color:var(--text-muted);font-size:0.85rem;margin-bottom:6px;display:block;}
+  .field-textarea, .field-select{
+    width:100%;padding:12px 14px;border-radius:10px;
+    background:rgba(0,0,0,0.3);border:1px solid rgba(244,180,0,0.25);
+    color:var(--white);font-family:'Tajawal', sans-serif;font-size:0.92rem;margin-bottom:14px;
+  }
+  .field-textarea{min-height:100px;resize:vertical;line-height:1.7;}
+  .field-hint{color:var(--text-muted);font-size:0.78rem;margin-top:-8px;margin-bottom:14px;}
+
+  .save-bar{
+    position:fixed;bottom:0;left:0;right:0;
+    background:rgba(20,4,7,0.98);
+    border-top:1px solid rgba(244,180,0,0.2);
+    padding:16px 5%;
+    display:flex;gap:12px;justify-content:flex-end;
+    z-index:50;
+  }
+  .btn-save, .btn-cancel{
+    padding:12px 28px;border-radius:10px;border:none;font-weight:700;font-size:0.92rem;
+    display:flex;align-items:center;gap:8px;justify-content:center;min-width:120px;
+  }
+  .btn-save{background:var(--yellow);color:var(--bg-void);}
+  .btn-save:disabled{opacity:0.8;}
+  .btn-cancel{background:transparent;border:1.5px solid var(--text-muted);color:var(--text-muted);}
+
+  .spinner{
+    width:15px;height:15px;border:2px solid rgba(28,5,8,0.3);
+    border-top-color:var(--bg-void);border-radius:50%;
+    animation:spin 0.6s linear infinite;display:inline-block;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .confirm-toast{
+    position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+    background:var(--bg-void);border:1px solid rgba(244,180,0,0.3);
+    padding:12px 20px;border-radius:10px;color:var(--text-soft);font-size:0.88rem;
+    box-shadow:0 8px 24px rgba(0,0,0,0.5);z-index:200;display:none;
+  }
+  .confirm-toast.show{display:block;}
 </style>
 </head>
 <body>
-  <h1>قسم <span>Autores</span></h1>
-  <p>هذي صفحة مبدئية. الإعدادات التفصيلية لهذا القسم بنبنيها بالخطوة الجاية.</p>
-  <a id="backLink" href="home.html">الرجوع لصفحة السيرفر</a>
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const guild = params.get('guild');
-    if (guild) document.getElementById('backLink').href = 'home.html?guild=' + guild;
-  </script>
+
+<header>
+  <a class="back-link" id="backLink" href="home.html">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    الرجوع
+  </a>
+  <div class="brand"><div class="mark">S</div>Safio</div>
+  <div style="width:60px;"></div>
+</header>
+
+<main>
+  <h1 class="page-title">الترحيب والمغادرة</h1>
+
+  <div class="setting-card">
+    <div class="setting-card-header">
+      <h3>Welcome Message</h3>
+      <div class="switch" id="welcomeToggle"><div class="knob"></div></div>
+    </div>
+    <div class="card-body" id="welcomeBody">
+      <label class="field-label">وصف الترحيب</label>
+      <textarea class="field-textarea" id="welcomeMessageInput" placeholder="اكتب رسالة الترحيب... استخدم [user] عشان يمنشن العضو"></textarea>
+      <div class="field-hint">استخدم <b>[user]</b> بأي مكان وبيتحول تلقائيًا لمنشن العضو الجديد</div>
+      <label class="field-label">الروم</label>
+      <select class="field-select" id="welcomeChannelSelect"><option value="">اختر روم...</option></select>
+    </div>
+  </div>
+
+  <div class="setting-card">
+    <div class="setting-card-header">
+      <h3>Leave Message</h3>
+      <div class="switch" id="leaveToggle"><div class="knob"></div></div>
+    </div>
+    <div class="card-body" id="leaveBody">
+      <label class="field-label">وصف المغادرة</label>
+      <textarea class="field-textarea" id="leaveMessageInput" placeholder="اكتب رسالة المغادرة... استخدم [user] عشان يمنشن العضو"></textarea>
+      <div class="field-hint">استخدم <b>[user]</b> بأي مكان وبيتحول تلقائيًا لاسم العضو المغادر</div>
+      <label class="field-label">الروم</label>
+      <select class="field-select" id="leaveChannelSelect"><option value="">اختر روم...</option></select>
+    </div>
+  </div>
+</main>
+
+<div class="save-bar">
+  <button class="btn-cancel" id="cancelBtn">إلغاء</button>
+  <button class="btn-save" id="saveBtn"><span id="saveBtnText">حفظ التغييرات</span></button>
+</div>
+
+<div class="confirm-toast" id="confirmToast">تم الحفظ بنجاح</div>
+
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const guildId = urlParams.get('guild');
+  document.getElementById('backLink').href = guildId ? `home.html?guild=${guildId}` : 'home.html';
+  if (!guildId) window.location.href = 'Dashboard.html';
+
+  let savedSettings = {};
+  let allChannels = [];
+
+  function showToast(text){
+    const t = document.getElementById('confirmToast');
+    t.textContent = text;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  function setupToggle(toggleId, bodyId){
+    const toggle = document.getElementById(toggleId);
+    const body = document.getElementById(bodyId);
+    toggle.addEventListener('click', () => {
+      toggle.classList.toggle('on');
+      body.classList.toggle('open', toggle.classList.contains('on'));
+    });
+  }
+  setupToggle('welcomeToggle', 'welcomeBody');
+  setupToggle('leaveToggle', 'leaveBody');
+
+  function fillChannelSelect(id, selectedId){
+    const select = document.getElementById(id);
+    select.innerHTML = '<option value="">اختر روم...</option>';
+    allChannels.forEach(ch => {
+      const opt = document.createElement('option');
+      opt.value = ch.id;
+      opt.textContent = '# ' + ch.name;
+      if (ch.id === selectedId) opt.selected = true;
+      select.appendChild(opt);
+    });
+  }
+
+  function applySettings(data){
+    savedSettings = data;
+
+    document.getElementById('welcomeToggle').classList.toggle('on', data.welcomeEnabled);
+    document.getElementById('welcomeBody').classList.toggle('open', data.welcomeEnabled);
+    document.getElementById('welcomeMessageInput').value = data.welcomeMessage || '';
+    fillChannelSelect('welcomeChannelSelect', data.welcomeChannelId);
+
+    document.getElementById('leaveToggle').classList.toggle('on', data.leaveEnabled);
+    document.getElementById('leaveBody').classList.toggle('open', data.leaveEnabled);
+    document.getElementById('leaveMessageInput').value = data.leaveMessage || '';
+    fillChannelSelect('leaveChannelSelect', data.leaveChannelId);
+  }
+
+  function loadSettings(){
+    Promise.all([
+      fetch(`/api/guild/${guildId}/channels`).then(r => r.json()),
+      fetch(`/api/guild/${guildId}/welcome-settings`).then(r => r.json())
+    ]).then(([channels, settings]) => {
+      allChannels = Array.isArray(channels) ? channels : [];
+      applySettings(settings);
+    });
+  }
+  loadSettings();
+
+  document.getElementById('cancelBtn').addEventListener('click', () => {
+    applySettings(savedSettings);
+  });
+
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    const btn = document.getElementById('saveBtn');
+    const btnText = document.getElementById('saveBtnText');
+    btn.disabled = true;
+    btnText.innerHTML = '<span class="spinner"></span>';
+
+    const payload = {
+      welcomeEnabled: document.getElementById('welcomeToggle').classList.contains('on'),
+      welcomeMessage: document.getElementById('welcomeMessageInput').value.trim(),
+      welcomeChannelId: document.getElementById('welcomeChannelSelect').value,
+      leaveEnabled: document.getElementById('leaveToggle').classList.contains('on'),
+      leaveMessage: document.getElementById('leaveMessageInput').value.trim(),
+      leaveChannelId: document.getElementById('leaveChannelSelect').value
+    };
+
+    fetch(`/api/guild/${guildId}/welcome-settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(r => {
+        if (!r.ok) throw new Error('save_failed');
+        return r.json();
+      })
+      .then(() => {
+        savedSettings = payload;
+        showToast('تم الحفظ بنجاح');
+      })
+      .catch(() => {
+        showToast('صار خطأ، حاول مرة ثانية');
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btnText.textContent = 'حفظ التغييرات';
+      });
+  });
+</script>
+
 </body>
 </html>
