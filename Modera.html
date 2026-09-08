@@ -3,36 +3,460 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Safio | Autores</title>
+<title>Safio | أوامر الإشراف</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg-void:#1c0508; --red-deep:#3d0c10; --red-main:#7a1620;
-    --yellow:#f4b400; --yellow-bright:#ffd447; --white:#ffffff; --text-muted:#caa79a;
+    --yellow:#f4b400; --yellow-bright:#ffd447; --white:#ffffff;
+    --text-soft:#f2e4d8; --text-muted:#caa79a;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   body{
     font-family:'Tajawal', sans-serif;
-    background:linear-gradient(160deg, var(--bg-void), var(--red-deep));
-    color:var(--white); min-height:100vh;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    text-align:center;padding:40px;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(168,35,47,0.3), transparent 45%),
+      linear-gradient(160deg, var(--bg-void) 0%, var(--red-deep) 60%, var(--bg-void) 100%);
+    color:var(--text-soft);min-height:100vh;
   }
-  h1{font-family:'Rubik', sans-serif;font-weight:900;font-size:2.1rem;margin-bottom:14px;}
-  span{color:var(--yellow);}
-  p{color:var(--text-muted);max-width:480px;line-height:1.8;margin-bottom:28px;}
-  a{background:var(--white);color:var(--red-deep);padding:14px 32px;border-radius:10px;font-weight:700;text-decoration:none;}
+  h1,h2,.brand{font-family:'Rubik', sans-serif;}
+  a{text-decoration:none;color:inherit;}
+  button{font-family:'Tajawal', sans-serif;cursor:pointer;}
+
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 5%;border-bottom:1px solid rgba(244,180,0,0.15);
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.25rem;color:var(--white);}
+  .brand .mark{
+    width:32px;height:32px;background:var(--yellow);
+    clip-path:polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+    display:flex;align-items:center;justify-content:center;color:var(--bg-void);font-weight:900;font-size:0.9rem;
+  }
+  .back-link{display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:0.9rem;}
+  .back-link:hover{color:var(--yellow-bright);}
+
+  main{padding:30px 5% 90px;max-width:760px;margin:0 auto;}
+  .page-title{font-size:clamp(1.5rem,3vw,2rem);color:var(--white);font-weight:900;}
+
+  .switch{
+    width:44px;height:25px;border-radius:999px;background:rgba(255,255,255,0.15);
+    position:relative;border:1px solid rgba(244,180,0,0.3);flex:0 0 auto;
+  }
+  .switch .knob{
+    position:absolute;top:2px;right:2px;width:19px;height:19px;border-radius:50%;
+    background:var(--text-muted);transition:all 0.2s ease;
+  }
+  .switch.on{background:rgba(244,180,0,0.25);}
+  .switch.on .knob{background:var(--yellow);right:calc(100% - 21px);}
+
+  .top-toggle{
+    display:flex;align-items:center;justify-content:space-between;
+    background:linear-gradient(160deg, rgba(122,22,32,0.35), rgba(28,5,8,0.55));
+    border:1px solid rgba(244,180,0,0.18);border-radius:14px;
+    padding:16px 20px;margin:22px 0 28px;
+  }
+  .top-toggle span{color:var(--white);font-weight:700;font-size:0.98rem;}
+
+  .cmd-card{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    background:linear-gradient(160deg, rgba(122,22,32,0.28), rgba(28,5,8,0.5));
+    border:1px solid rgba(244,180,0,0.15);border-radius:14px;
+    padding:16px 18px;margin-bottom:12px;
+  }
+  .cmd-name{display:flex;align-items:center;gap:12px;}
+  .cmd-icon{
+    width:38px;height:38px;border-radius:10px;background:var(--red-main);
+    display:flex;align-items:center;justify-content:center;color:var(--yellow-bright);flex:0 0 auto;
+  }
+  .cmd-icon svg{width:18px;height:18px;}
+  .cmd-name h3{color:var(--white);font-size:0.98rem;font-weight:700;}
+  .cmd-name p{color:var(--text-muted);font-size:0.78rem;margin-top:2px;}
+
+  .cmd-actions{display:flex;align-items:center;gap:12px;flex:0 0 auto;}
+  .edit-btn{
+    width:36px;height:36px;border-radius:9px;border:none;
+    background:rgba(244,180,0,0.15);color:var(--yellow-bright);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .edit-btn svg{width:16px;height:16px;}
+
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.6);
+    display:none;align-items:flex-end;justify-content:center;z-index:100;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:linear-gradient(180deg, rgba(58,12,17,0.99), rgba(28,5,8,0.99));
+    border:1px solid rgba(244,180,0,0.25);
+    border-radius:20px 20px 0 0;
+    width:100%;max-width:560px;max-height:88vh;overflow-y:auto;
+    padding:24px 20px 90px;position:relative;
+  }
+  @media (min-width:640px){
+    .modal-overlay{align-items:center;}
+    .modal{border-radius:18px;max-height:85vh;}
+  }
+  .modal h2{color:var(--white);font-size:1.15rem;margin-bottom:18px;}
+  .modal-close{
+    position:absolute;top:18px;left:18px;width:30px;height:30px;
+    background:rgba(0,0,0,0.3);border:none;border-radius:8px;color:var(--text-muted);
+  }
+
+  .sub-label{color:var(--white);font-size:0.92rem;font-weight:700;margin:16px 0 6px;}
+  .sub-hint{color:var(--text-muted);font-size:0.8rem;margin-bottom:10px;}
+
+  .tags-input-box{
+    display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+    padding:10px 12px;border-radius:10px;
+    background:rgba(0,0,0,0.3);border:1px solid rgba(244,180,0,0.25);
+    margin-bottom:8px;
+  }
+  .tags-input-box input{
+    flex:1;min-width:100px;background:transparent;border:none;outline:none;
+    color:var(--white);font-family:'Tajawal', sans-serif;font-size:0.9rem;padding:6px;
+  }
+  .tag-chip{
+    display:flex;align-items:center;gap:7px;
+    background:rgba(244,180,0,0.14);border:1px solid rgba(244,180,0,0.4);
+    color:var(--yellow-bright);padding:6px 8px 6px 12px;border-radius:999px;font-size:0.82rem;white-space:nowrap;
+  }
+  .tag-chip button{
+    background:rgba(244,180,0,0.25);border:none;color:var(--yellow-bright);
+    width:16px;height:16px;border-radius:50%;font-size:0.7rem;line-height:1;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  .field-select{
+    width:100%;padding:11px 14px;border-radius:10px;
+    background:rgba(0,0,0,0.3);border:1px solid rgba(244,180,0,0.25);
+    color:var(--white);font-family:'Tajawal', sans-serif;font-size:0.9rem;margin-bottom:10px;
+  }
+  .chips-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;min-height:10px;}
+  .mini-chip{
+    display:flex;align-items:center;gap:7px;
+    background:rgba(244,180,0,0.12);border:1px solid rgba(244,180,0,0.35);
+    color:var(--yellow-bright);padding:6px 8px 6px 12px;border-radius:999px;font-size:0.82rem;
+  }
+  .mini-chip button{
+    background:rgba(244,180,0,0.25);border:none;color:var(--yellow-bright);
+    width:16px;height:16px;border-radius:50%;font-size:0.7rem;line-height:1;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  .modal-actions{
+    position:fixed;bottom:0;left:0;right:0;
+    display:flex;gap:10px;padding:16px 20px;
+    background:linear-gradient(0deg, rgba(20,4,7,1) 70%, transparent);
+    max-width:560px;margin:0 auto;z-index:110;
+  }
+  @media (min-width:640px){
+    .modal-actions{position:sticky;background:rgba(28,5,8,1);border-radius:0 0 16px 16px;margin:0;max-width:none;}
+  }
+  .btn-save, .btn-cancel{
+    flex:1;padding:13px;border-radius:10px;border:none;font-weight:700;font-size:0.92rem;
+  }
+  .btn-save{background:var(--yellow);color:var(--bg-void);}
+  .btn-cancel{background:transparent;border:1.5px solid var(--text-muted);color:var(--text-muted);}
+
+  .confirm-toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--bg-void);border:1px solid rgba(244,180,0,0.3);
+    padding:12px 20px;border-radius:10px;color:var(--text-soft);font-size:0.88rem;
+    box-shadow:0 8px 24px rgba(0,0,0,0.5);z-index:200;display:none;
+  }
+  .confirm-toast.show{display:block;}
 </style>
 </head>
 <body>
-  <h1>قسم <span>Autores</span></h1>
-  <p>هذي صفحة مبدئية. الإعدادات التفصيلية لهذا القسم بنبنيها بالخطوة الجاية.</p>
-  <a id="backLink" href="home.html">الرجوع لصفحة السيرفر</a>
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const guild = params.get('guild');
-    if (guild) document.getElementById('backLink').href = 'home.html?guild=' + guild;
-  </script>
+
+<header>
+  <a class="back-link" id="backLink" href="home.html">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    الرجوع
+  </a>
+  <div class="brand"><div class="mark">S</div>Safio</div>
+  <div style="width:60px;"></div>
+</header>
+
+<main>
+  <h1 class="page-title">أوامر الإشراف</h1>
+
+  <div class="top-toggle">
+    <span>تفعيل أوامر الإشراف</span>
+    <div class="switch" id="globalToggle"><div class="knob"></div></div>
+  </div>
+
+  <div id="cardsContainer"></div>
+</main>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <button class="modal-close" id="modalClose">✕</button>
+    <h2 id="modalTitle">تعديل أمر</h2>
+
+    <div class="sub-label">اختصارات الأمر</div>
+    <div class="sub-hint">اكتب الاختصار واضغط Enter لحفظه. اضغط مسح (Backspace) بالحقل الفاضي عشان تحذف آخر اختصار</div>
+    <div class="tags-input-box" id="aliasesBox">
+      <input type="text" id="aliasInput" placeholder="اكتب اختصار..." enterkeyhint="done">
+    </div>
+
+    <div class="sub-label">الرولات المفعّلة</div>
+    <div class="sub-hint">فقط أصحاب هالرولات يقدرون يستخدمون هذا الأمر. اتركها فاضية = متاح للجميع</div>
+    <select class="field-select" id="enabledRolesSelect"><option value="">اختر رول...</option></select>
+    <div class="chips-row" id="enabledRolesChips"></div>
+
+    <div class="sub-label">الرولات المعطّلة</div>
+    <div class="sub-hint">أصحاب هالرولات ما راح يقدرون يستخدمون هذا الأمر</div>
+    <select class="field-select" id="disabledRolesSelect"><option value="">اختر رول...</option></select>
+    <div class="chips-row" id="disabledRolesChips"></div>
+
+    <div class="sub-label">الرومات المفعّلة</div>
+    <div class="sub-hint">الأمر يشتغل بس بهالرومات. اتركها فاضية = يشتغل بكل الرومات</div>
+    <select class="field-select" id="enabledChannelsSelect"><option value="">اختر روم...</option></select>
+    <div class="chips-row" id="enabledChannelsChips"></div>
+
+    <div class="sub-label">الرومات المعطّلة</div>
+    <div class="sub-hint">الأمر ما يشتغل بهالرومات</div>
+    <select class="field-select" id="disabledChannelsSelect"><option value="">اختر روم...</option></select>
+    <div class="chips-row" id="disabledChannelsChips"></div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" id="modalCancelBtn">إلغاء</button>
+      <button class="btn-save" id="modalSaveBtn">حفظ التغييرات</button>
+    </div>
+  </div>
+</div>
+
+<div class="confirm-toast" id="confirmToast">تم الحفظ بنجاح</div>
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const guildId = urlParams.get('guild');
+  document.getElementById('backLink').href = guildId ? `home.html?guild=${guildId}` : 'home.html';
+  if (!guildId) window.location.href = 'Dashboard.html';
+
+  const COMMANDS_META = {
+    ban: { name: 'Ban', desc: 'حظر عضو من السيرفر', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m4.9 4.9 14.2 14.2"/></svg>' },
+    kick: { name: 'Kick', desc: 'طرد عضو من السيرفر', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>' },
+    unban: { name: 'Unban', desc: 'فك حظر عضو', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m9 12 2 2 4-4"/></svg>' },
+    timeout: { name: 'Timeout', desc: 'إسكات عضو لمدة محددة', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>' },
+    untimeout: { name: 'Untimeout', desc: 'إلغاء إسكات عضو', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>' },
+    lock: { name: 'Lock', desc: 'قفل الروم الحالي', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' },
+    unlock: { name: 'Unlock', desc: 'فتح الروم الحالي', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.5-2.2"/></svg>' },
+    warn: { name: 'Warn', desc: 'تحذير عضو', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 20h20L12 2Z"/><path d="M12 9v4M12 17h.01"/></svg>' },
+    clear: { name: 'Clear', desc: 'حذف عدد من الرسائل', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>' },
+    unwarn: { name: 'Unwarn', desc: 'إزالة تحذير عن عضو', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 20h20L12 2Z"/><path d="m9 13 2 2 4-4"/></svg>' },
+    warns: { name: 'Warns', desc: 'عرض تحذيرات عضو', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>' },
+    addrole: { name: 'Addrole', desc: 'إضافة رول لعضو', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>' },
+    deleteroles: { name: 'Deleteroles', desc: 'إزالة رول عن عضو', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg>' },
+    nickname: { name: 'Nickname', desc: 'تغيير اسم عضو بالسيرفر', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>' }
+  };
+
+  let allRoles = [];
+  let allChannels = [];
+  let commands = [];
+  let editingKey = null;
+  let modalState = { aliases: [], enabledRoles: [], disabledRoles: [], enabledChannels: [], disabledChannels: [] };
+
+  function showToast(text){
+    const t = document.getElementById('confirmToast');
+    t.textContent = text;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  const globalToggle = document.getElementById('globalToggle');
+  fetch(`/api/guild/${guildId}/moderation-status`).then(r => r.json()).then(d => {
+    globalToggle.classList.toggle('on', d.enabled);
+  });
+  globalToggle.addEventListener('click', () => {
+    const enabled = !globalToggle.classList.contains('on');
+    globalToggle.classList.toggle('on', enabled);
+    fetch(`/api/guild/${guildId}/moderation-status`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled })
+    }).then(() => showToast(enabled ? 'تم تفعيل أوامر الإشراف' : 'تم تعطيل أوامر الإشراف'));
+  });
+
+  Promise.all([
+    fetch(`/api/guild/${guildId}/roles`).then(r => r.json()),
+    fetch(`/api/guild/${guildId}/channels`).then(r => r.json()),
+    fetch(`/api/guild/${guildId}/moderation-commands`).then(r => r.json())
+  ]).then(([roles, channels, cmds]) => {
+    allRoles = Array.isArray(roles) ? roles : [];
+    allChannels = Array.isArray(channels) ? channels : [];
+    commands = cmds;
+    renderCards();
+  });
+
+  function renderCards(){
+    const container = document.getElementById('cardsContainer');
+    container.innerHTML = '';
+    commands.forEach(cmd => {
+      const meta = COMMANDS_META[cmd.commandKey];
+      const card = document.createElement('div');
+      card.className = 'cmd-card';
+      card.innerHTML = `
+        <div class="cmd-name">
+          <div class="cmd-icon">${meta.icon}</div>
+          <div>
+            <h3>${meta.name}</h3>
+            <p>${meta.desc}</p>
+          </div>
+        </div>
+        <div class="cmd-actions">
+          <button class="edit-btn" title="تعديل">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>
+          </button>
+          <div class="switch ${cmd.enabled ? 'on' : ''}" data-key="${cmd.commandKey}"><div class="knob"></div></div>
+        </div>
+      `;
+      card.querySelector('.edit-btn').addEventListener('click', () => openModal(cmd.commandKey));
+      card.querySelector('.switch').addEventListener('click', (e) => {
+        const sw = e.currentTarget;
+        const enabled = !sw.classList.contains('on');
+        sw.classList.toggle('on', enabled);
+        const target = commands.find(c => c.commandKey === cmd.commandKey);
+        target.enabled = enabled;
+        saveCommand(target, false);
+      });
+      container.appendChild(card);
+    });
+  }
+
+  const modalOverlay = document.getElementById('modalOverlay');
+
+  function fillSelect(id, items, prefix){
+    const select = document.getElementById(id);
+    select.innerHTML = '<option value="">اختر...</option>';
+    items.forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = (prefix || '') + item.name;
+      select.appendChild(opt);
+    });
+  }
+
+  function openModal(key){
+    editingKey = key;
+    const cmd = commands.find(c => c.commandKey === key);
+    document.getElementById('modalTitle').textContent = `تعديل أمر ${COMMANDS_META[key].name}`;
+
+    modalState = {
+      aliases: [...cmd.aliases],
+      enabledRoles: [...cmd.enabledRoles],
+      disabledRoles: [...cmd.disabledRoles],
+      enabledChannels: [...cmd.enabledChannels],
+      disabledChannels: [...cmd.disabledChannels]
+    };
+
+    fillSelect('enabledRolesSelect', allRoles);
+    fillSelect('disabledRolesSelect', allRoles);
+    fillSelect('enabledChannelsSelect', allChannels, '#');
+    fillSelect('disabledChannelsSelect', allChannels, '#');
+
+    renderAliasChips();
+    renderAllModalChips();
+    modalOverlay.classList.add('open');
+  }
+  function closeModal(){
+    modalOverlay.classList.remove('open');
+    editingKey = null;
+  }
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
+
+  const aliasInput = document.getElementById('aliasInput');
+  const aliasesBox = document.getElementById('aliasesBox');
+
+  function renderAliasChips(){
+    aliasesBox.querySelectorAll('.tag-chip').forEach(el => el.remove());
+    modalState.aliases.forEach(alias => {
+      const chip = document.createElement('div');
+      chip.className = 'tag-chip';
+      chip.innerHTML = `<span>${alias}</span><button>✕</button>`;
+      chip.querySelector('button').addEventListener('click', () => {
+        modalState.aliases = modalState.aliases.filter(a => a !== alias);
+        renderAliasChips();
+      });
+      aliasesBox.insertBefore(chip, aliasInput);
+    });
+  }
+
+  function commitAlias(){
+    const val = aliasInput.value.trim();
+    if (val && !modalState.aliases.includes(val)){
+      modalState.aliases.push(val);
+      renderAliasChips();
+    }
+    aliasInput.value = '';
+  }
+
+  aliasInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter'){
+      e.preventDefault();
+      commitAlias();
+    } else if (e.key === 'Backspace' && aliasInput.value === '' && modalState.aliases.length){
+      modalState.aliases.pop();
+      renderAliasChips();
+    }
+  });
+  aliasInput.addEventListener('blur', commitAlias);
+
+  ['enabledRoles', 'disabledRoles', 'enabledChannels', 'disabledChannels'].forEach(key => {
+    document.getElementById(key + 'Select').addEventListener('change', (e) => {
+      const id = e.target.value;
+      if (id && !modalState[key].includes(id)){
+        modalState[key].push(id);
+        renderModalChips(key);
+      }
+      e.target.value = '';
+    });
+  });
+
+  function renderModalChips(key){
+    const container = document.getElementById(key + 'Chips');
+    const source = key.includes('Roles') ? allRoles : allChannels;
+    container.innerHTML = '';
+    modalState[key].forEach(id => {
+      const item = source.find(x => x.id === id);
+      if (!item) return;
+      const chip = document.createElement('div');
+      chip.className = 'mini-chip';
+      chip.innerHTML = `<span>${item.name}</span><button>✕</button>`;
+      chip.querySelector('button').addEventListener('click', () => {
+        modalState[key] = modalState[key].filter(i => i !== id);
+        renderModalChips(key);
+      });
+      container.appendChild(chip);
+    });
+  }
+  function renderAllModalChips(){
+    ['enabledRoles', 'disabledRoles', 'enabledChannels', 'disabledChannels'].forEach(renderModalChips);
+  }
+
+  function saveCommand(cmdData, showMsg){
+    return fetch(`/api/guild/${guildId}/moderation-commands/${cmdData.commandKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cmdData)
+    }).then(r => r.json()).then(() => {
+      if (showMsg) showToast('تم الحفظ بنجاح');
+    });
+  }
+
+  document.getElementById('modalSaveBtn').addEventListener('click', () => {
+    const cmd = commands.find(c => c.commandKey === editingKey);
+    cmd.aliases = modalState.aliases.length ? modalState.aliases : [editingKey];
+    cmd.enabledRoles = modalState.enabledRoles;
+    cmd.disabledRoles = modalState.disabledRoles;
+    cmd.enabledChannels = modalState.enabledChannels;
+    cmd.disabledChannels = modalState.disabledChannels;
+    saveCommand(cmd, true).then(closeModal);
+  });
+</script>
+
 </body>
 </html>
