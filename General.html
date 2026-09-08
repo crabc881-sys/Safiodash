@@ -199,7 +199,7 @@
     <div class="sub-label">اختصارات الأمر</div>
     <div class="sub-hint">اكتب الاختصار واضغط Enter لحفظه. اضغط مسح (Backspace) بالحقل الفاضي عشان تحذف آخر اختصار</div>
     <div class="tags-input-box" id="aliasesBox">
-      <input type="text" id="aliasInput" placeholder="اكتب اختصار...">
+      <input type="text" id="aliasInput" placeholder="اكتب اختصار..." enterkeyhint="done">
     </div>
 
     <div class="sub-label">الرولات المفعّلة</div>
@@ -228,9 +228,9 @@
     </div>
   </div>
 </div>
-
   
 <div class="confirm-toast" id="confirmToast">تم الحفظ بنجاح</div>
+
 <script>
   const urlParams = new URLSearchParams(window.location.search);
   const guildId = urlParams.get('guild');
@@ -378,20 +378,26 @@
     });
   }
 
+  function commitAlias(){
+    const val = aliasInput.value.trim();
+    if (val && !modalState.aliases.includes(val)){
+      modalState.aliases.push(val);
+      renderAliasChips();
+    }
+    aliasInput.value = '';
+  }
+
   aliasInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter'){
       e.preventDefault();
-      const val = aliasInput.value.trim();
-      if (val && !modalState.aliases.includes(val)){
-        modalState.aliases.push(val);
-        renderAliasChips();
-      }
-      aliasInput.value = '';
+      commitAlias();
     } else if (e.key === 'Backspace' && aliasInput.value === '' && modalState.aliases.length){
       modalState.aliases.pop();
       renderAliasChips();
     }
   });
+
+  aliasInput.addEventListener('blur', commitAlias);
 
   ['enabledRoles', 'disabledRoles', 'enabledChannels', 'disabledChannels'].forEach(key => {
     document.getElementById(key + 'Select').addEventListener('change', (e) => {
