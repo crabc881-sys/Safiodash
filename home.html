@@ -19,6 +19,7 @@
     --text-muted:#caa79a;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
+  html, body{overflow-x:hidden;width:100%;max-width:100vw;position:relative;}
   body{
     font-family:'Tajawal', sans-serif;
     background:
@@ -122,7 +123,7 @@
   .sidebar-overlay.open{opacity:1;pointer-events:auto;}
 
   .sidebar{
-    position:fixed;top:0;left:0;height:100vh;width:290px;max-width:82vw;
+    position:fixed;top:0;left:0;height:100vh;width:320px;max-width:86vw;
     background:linear-gradient(180deg, rgba(28,5,8,0.98), rgba(58,12,17,0.98));
     border-right:1px solid rgba(244,180,0,0.2);
     transform:translateX(-100%);
@@ -166,13 +167,17 @@
 
   .sidebar-nav-item{
     display:flex;align-items:center;gap:14px;
-    padding:13px 20px;color:var(--text-soft);font-size:0.95rem;
+    padding:15px 20px;color:var(--text-soft);font-size:0.95rem;
     border-bottom:1px solid rgba(244,180,0,0.06);
   }
   .sidebar-nav-item:hover{background:rgba(244,180,0,0.07);}
   .sidebar-nav-item svg{width:19px;height:19px;color:var(--yellow-bright);flex:0 0 auto;}
   .sidebar-nav-item .chev{width:15px;height:15px;color:var(--text-muted);margin-right:auto;}
   html[dir="ltr"] .sidebar-nav-item .chev{margin-right:0;margin-left:auto;transform:rotate(180deg);}
+
+  .sidebar-divider{
+    padding:22px 20px 8px;color:var(--text-muted);font-size:0.75rem;font-weight:700;letter-spacing:0.5px;
+  }
   html[dir="ltr"] .sidebar{left:auto;right:0;border-right:none;border-left:1px solid rgba(244,180,0,0.2);transform:translateX(100%);}
   html[dir="ltr"] .sidebar.open{transform:translateX(0);}
 
@@ -192,6 +197,22 @@
   .stat-card .value.small-note{font-size:1rem;color:var(--text-muted);font-family:'Tajawal', sans-serif;font-weight:500;margin-top:4px;}
 
   .section-title{color:var(--white);font-weight:700;font-size:1.1rem;margin:36px 0 16px;}
+  .nav-cards{display:flex;flex-direction:column;gap:12px;margin-bottom:40px;}
+  .nav-card{
+    display:flex;align-items:center;gap:16px;
+    background:linear-gradient(160deg, rgba(122,22,32,0.25), rgba(28,5,8,0.5));
+    border:1px solid rgba(244,180,0,0.12);border-radius:14px;
+    padding:18px 20px;transition:transform 0.15s ease, border-color 0.15s ease;
+  }
+  .nav-card:hover{transform:translateX(-4px);border-color:rgba(244,180,0,0.4);}
+  html[dir="ltr"] .nav-card:hover{transform:translateX(4px);}
+  .nav-icon{
+    width:44px;height:44px;flex:0 0 auto;border-radius:12px;
+    background:var(--red-main);display:flex;align-items:center;justify-content:center;color:var(--yellow-bright);
+  }
+  .nav-icon svg{width:22px;height:22px;}
+  .nav-text h3{color:var(--white);font-size:1.02rem;font-weight:700;}
+  .nav-text p{color:var(--text-muted);font-size:0.85rem;margin-top:2px;}
 
   .roles-block{
     background:linear-gradient(160deg, rgba(122,22,32,0.28), rgba(28,5,8,0.5));
@@ -266,15 +287,9 @@
     </div>
   </div>
 
-  <div class="brand"><div class="mark">S</div>Safio</div>
+  <a class="brand" href="index.html"><div class="mark">S</div>Safio</a>
 
-  <div class="header-right">
-    <button class="chip-btn" id="guildTrigger">
-      <span id="currentGuildName" data-i18n="loading">جاري التحميل...</span>
-      <div class="g-mini-icon" id="currentGuildIcon">S</div>
-    </button>
-    <div class="dropdown" id="guildDropdown"></div>
-  </div>
+  <div style="width:40px;"></div>
 </header>
 
 <main>
@@ -315,7 +330,6 @@
     </select>
     <div class="role-chips" id="memberRoleChips"></div>
   </div>
-
   <div class="save-bar" id="saveBar">
     <span data-i18n="unsaved_changes">فيه تغييرات غير محفوظة</span>
     <div class="actions">
@@ -324,6 +338,7 @@
     </div>
   </div>
 </main>
+
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <aside class="sidebar" id="sidebarPanel">
   <div class="sidebar-head">
@@ -337,6 +352,13 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
   </div>
   <div class="sidebar-guild-list" id="sidebarGuildList"></div>
+
+  <div class="sidebar-nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m2 4 5 4 5-6 5 6 5-4-2 12H4Z"/></svg>
+    <span>Premium</span>
+  </div>
+
+  <div class="sidebar-divider">Moderation</div>
 
   <a class="sidebar-nav-item" href="#" data-page="Autores.html">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -356,6 +378,24 @@
   <a class="sidebar-nav-item" href="#" data-page="Modera.html">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z"/></svg>
     <span data-i18n="nav_modera">أوامر الإشراف</span>
+    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+  </a>
+
+  <div class="sidebar-divider">General</div>
+
+  <a class="sidebar-nav-item" href="#" data-page="Embed.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg>
+    <span>Embed Messages</span>
+    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+  </a>
+  <a class="sidebar-nav-item" href="#" data-page="Ticket.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4Z"/></svg>
+    <span>Tickets</span>
+    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+  </a>
+  <a class="sidebar-nav-item" href="#" data-page="apply.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <span>Apply System</span>
     <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
   </a>
 </aside>
@@ -425,6 +465,7 @@
 
   applyLang();
 
+  // ===== إغلاق/فتح القوائم =====
   function toggleDropdown(id, others){
     const el = document.getElementById(id);
     const willOpen = !el.classList.contains('open');
@@ -433,27 +474,25 @@
   }
   document.getElementById('profileTrigger').addEventListener('click', (e) => {
     e.stopPropagation();
-    toggleDropdown('profileDropdown', ['guildDropdown']);
-  });
-  document.getElementById('guildTrigger').addEventListener('click', (e) => {
-    e.stopPropagation();
-    toggleDropdown('guildDropdown', ['profileDropdown']);
+    toggleDropdown('profileDropdown', []);
   });
   document.addEventListener('click', () => {
     document.getElementById('profileDropdown').classList.remove('open');
-    document.getElementById('guildDropdown').classList.remove('open');
   });
 
+  // ===== القائمة الجانبية =====
   const sidebarPanel = document.getElementById('sidebarPanel');
   const sidebarOverlay = document.getElementById('sidebarOverlay');
 
   function openSidebar(){
     sidebarPanel.classList.add('open');
     sidebarOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
   }
   function closeSidebar(){
     sidebarPanel.classList.remove('open');
     sidebarOverlay.classList.remove('open');
+    document.body.style.overflow = '';
   }
   document.getElementById('sidebarTrigger').addEventListener('click', openSidebar);
   document.getElementById('sidebarClose').addEventListener('click', closeSidebar);
@@ -464,6 +503,7 @@
     document.getElementById('sidebarGuildList').classList.toggle('expanded');
   });
 
+  // ===== تحديد السيرفر الحالي =====
   const urlParams = new URLSearchParams(window.location.search);
   let currentGuildId = urlParams.get('guild');
 
@@ -489,28 +529,6 @@
         currentGuildId = guilds[0].id;
       }
       const current = guilds.find(g => g.id === currentGuildId);
-      document.getElementById('currentGuildName').textContent = current.name;
-      document.getElementById('currentGuildIcon').innerHTML = guildIconHtml(current);
-
-      const dropdown = document.getElementById('guildDropdown');
-      const currentBlock = document.createElement('div');
-      currentBlock.className = 'dropdown-current';
-      currentBlock.innerHTML = `
-        <div class="g-mini-icon">${guildIconHtml(current)}</div>
-        <div>
-          <small data-i18n="your_servers">${T[lang].your_servers}</small>
-          <div style="color:var(--white);font-weight:700;">${current.name}</div>
-        </div>
-      `;
-      dropdown.appendChild(currentBlock);
-
-      guilds.forEach(g => {
-        const opt = document.createElement('a');
-        opt.className = 'guild-option' + (g.id === currentGuildId ? ' active' : '');
-        opt.href = `home.html?guild=${g.id}`;
-        opt.innerHTML = `<div class="g-mini-icon">${guildIconHtml(g)}</div><span>${g.name}</span>`;
-        dropdown.appendChild(opt);
-      });
 
       document.getElementById('sidebarGuildIcon').innerHTML = guildIconHtml(current);
       document.getElementById('sidebarGuildName').textContent = current.name;
@@ -532,6 +550,8 @@
       loadRolesAndAutoroles();
     })
     .catch(() => { window.location.href = 'index.html'; });
+
+  // ===== الإحصائيات =====
   function loadStats(){
     fetch(`/api/guild/${currentGuildId}/stats`)
       .then(r => r.json())
@@ -546,6 +566,7 @@
       .catch(() => {});
   }
 
+  // ===== الرولات التلقائية =====
   let allRoles = [];
   let savedState = { botRoles: [], memberRoles: [] };
   let currentState = { botRoles: [], memberRoles: [] };
