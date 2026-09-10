@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Safio | Embed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-void:#1c0508; --red-deep:#3d0c10; --red-main:#7a1620;
+    --yellow:#f4b400; --yellow-bright:#ffd447; --white:#ffffff; --text-muted:#caa79a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:'Tajawal', sans-serif;
+    background:linear-gradient(160deg, var(--bg-void), var(--red-deep));
+    color:var(--white); min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:40px;
+  }
+  h1{font-family:'Rubik', sans-serif;font-weight:900;font-size:2.1rem;margin-bottom:14px;}
+  span{color:var(--yellow);}
+  p{color:var(--text-muted);max-width:480px;line-height:1.8;margin-bottom:28px;}
+  a{background:var(--white);color:var(--red-deep);padding:14px 32px;border-radius:10px;font-weight:700;text-decoration:none;}
+</style>
+</head>
+<body>
+  <h1>قسم <span>Embed</span></h1>
+  <p>هذي صفحة مبدئية. الإعدادات التفصيلية لهذا القسم بنبنيها بالخطوة الجاية.</p>
+  <a id="backLink" href="home.html">الرجوع لصفحة السيرفر</a>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const guild = params.get('guild');
+    if (guild) document.getElementById('backLink').href = 'home.html?guild=' + guild;
+  </script>
+</body>
+</html>
