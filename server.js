@@ -551,5 +551,197 @@ app.post('/api/guild/:guildId/moderation-commands/:commandKey', async (req, res)
   }
 });
 
+// --- Categories & Ticket Panels Routes ---
+
+app.get('/api/guild/:guildId/categories', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const r = await fetch(`https://discord.com/api/guilds/${req.params.guildId}/channels`, {
+      headers: { Authorization: `Bot ${BOT_TOKEN}` }
+    });
+    if (!r.ok) return res.status(r.status).json({ error: 'discord_error' });
+    const channels = await r.json();
+    const categories = channels
+      .filter(c => c.type === 4)
+      .sort((a, b) => a.position - b.position)
+      .map(c => ({ id: c.id, name: c.name }));
+    res.json(categories);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'categories_failed' });
+  }
+});
+
+app.get('/api/guild/:guildId/ticket-panels', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const client = await getMongo();
+    const col = client.db('test').collection('ticketpanels');
+    const list = await col.find({ guildId: req.params.guildId }).toArray();
+    res.json(list.map(d => ({ ...d, _id: d._id.toString() })));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'fetch_failed' });
+  }
+});
+
+app.post('/api/guild/:guildId/ticket-panels', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: 'missing_name' });
+    const client = await getMongo();
+    const col = client.db('test').collection('ticketpanels');
+    const doc = {
+      guildId: req.params.guildId,
+      name: String(name),
+      buttonLabel: 'فتح تذكرة',
+      embedDescription: '',
+      openCategoryId: '',
+      closedCategoryId: '',
+      supportRoleId: '',
+      ticketEmbedMessage: '',
+      bannerUrl: '',
+      ticketCounter: 0,
+      createdAt: new Date()
+    };
+    const result = await col.insertOne(doc);
+    res.json({ ...doc, _id: result.insertedId.toString() });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'create_failed' });
+  }
+});
+
+app.put('/api/guild/:guildId/ticket-panels/:id', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const { buttonLabel, embedDescription, openCategoryId, closedCategoryId, supportRoleId, ticketEmbedMessage, bannerUrl } = req.body;
+    const client = await getMongo();
+    const col = client.db('test').collection('ticketpanels');
+    await col.updateOne(
+      { _id: new ObjectId(req.params.id), guildId: req.params.guildId },
+      { $set: {
+          buttonLabel: String(buttonLabel || 'فتح تذكرة'),
+          embedDescription: String(embedDescription || ''),
+          openCategoryId: String(openCategoryId || ''),
+          closedCategoryId: String(closedCategoryId || ''),
+          supportRoleId: String(supportRoleId || ''),
+          ticketEmbedMessage: String(ticketEmbedMessage || ''),
+          bannerUrl: String(bannerUrl || '')
+      } }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'update_failed' });
+  }
+});
+
+app.delete('/api/guild/:guildId/ticket-panels/:id', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const client = await getMongo();
+    const col = client.db('test').collection('ticketpanels');
+    await col.deleteOne({ _id: new ObjectId(req.params.id), guildId: req.params.guildId });
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'delete_failed' });
+  }
+});
+
+app.post('/api/guild/:guildId/ticket-panels/:id/rename', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: 'missing_name' });
+    const client = await getMongo();
+    const col = client.db('test').collection('ticketpanels');
+    await col.updateOne(
+      { _id: new ObjectId(req.params.id), guildId: req.params.guildId },
+      { $set: { name: String(name) } }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'rename_failed' });
+  }
+});
+
+app.post('/api/guild/:guildId/ticket-panels/:id/copy', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const client = await getMongo();
+    const col = client.db('test').collection('ticketpanels');
+    const original = await col.findOne({ _id: new ObjectId(req.params.id), guildId: req.params.guildId });
+    if (!original) return res.status(404).json({ error: 'not_found' });
+
+    const copy = { ...original };
+    delete copy._id;
+    copy.name = `Copy ${original.name}`;
+    copy.ticketCounter = 0;
+    copy.createdAt = new Date();
+
+    const result = await col.insertOne(copy);
+    res.json({ ...copy, _id: result.insertedId.toString() });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'copy_failed' });
+  }
+});
+
+app.post('/api/guild/:guildId/ticket-panels/:id/send', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const { channelId } = req.body;
+    if (!channelId) return res.status(400).json({ error: 'missing_channel' });
+
+    const client = await getMongo();
+    const col = client.db('test').collection('ticketpanels');
+    const panel = await col.findOne({ _id: new ObjectId(req.params.id), guildId: req.params.guildId });
+    if (!panel) return res.status(404).json({ error: 'not_found' });
+
+    const embed = {
+      description: panel.embedDescription || ' ',
+      color: 0xF4B400
+    };
+    if (panel.bannerUrl) embed.image = { url: panel.bannerUrl };
+
+    const body = {
+      embeds: [embed],
+      components: [{
+        type: 1,
+        components: [{
+          type: 2,
+          style: 1,
+          label: panel.buttonLabel || 'فتح تذكرة',
+          custom_id: `safio_ticket_open_${panel._id}`
+        }]
+      }]
+    };
+
+    const sendRes = await fetch(`https://discord.com/api/channels/${channelId}/messages`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bot ${BOT_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!sendRes.ok) {
+      const errData = await sendRes.json().catch(() => ({}));
+      console.error('Discord send error:', errData);
+      return res.status(500).json({ error: 'discord_send_failed' });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'send_failed' });
+  }
+});
+
 // تشغيل السيرفر
 app.listen(PORT, () => console.log(`Safio server running on http://localhost:${PORT}`));
