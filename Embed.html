@@ -1,38 +1,527 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="htmlRoot">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Safio | Embed</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg-void:#1c0508; --red-deep:#3d0c10; --red-main:#7a1620;
-    --yellow:#f4b400; --yellow-bright:#ffd447; --white:#ffffff; --text-muted:#caa79a;
+    --yellow:#f4b400; --yellow-bright:#ffd447; --white:#ffffff;
+    --text-soft:#f2e4d8; --text-muted:#caa79a;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{overflow-x:hidden;}
   body{
     font-family:'Tajawal', sans-serif;
-    background:linear-gradient(160deg, var(--bg-void), var(--red-deep));
-    color:var(--white); min-height:100vh;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    text-align:center;padding:40px;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(168,35,47,0.3), transparent 45%),
+      linear-gradient(160deg, var(--bg-void) 0%, var(--red-deep) 60%, var(--bg-void) 100%);
+    color:var(--text-soft);min-height:100vh;
   }
-  h1{font-family:'Rubik', sans-serif;font-weight:900;font-size:2.1rem;margin-bottom:14px;}
-  span{color:var(--yellow);}
-  p{color:var(--text-muted);max-width:480px;line-height:1.8;margin-bottom:28px;}
-  a{background:var(--white);color:var(--red-deep);padding:14px 32px;border-radius:10px;font-weight:700;text-decoration:none;}
+  h1,h2,.brand{font-family:'Rubik', sans-serif;}
+  a{text-decoration:none;color:inherit;}
+  button{font-family:'Tajawal', sans-serif;cursor:pointer;}
+
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 5%;border-bottom:1px solid rgba(244,180,0,0.15);
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.25rem;color:var(--white);}
+  .brand .mark{
+    width:32px;height:32px;background:var(--yellow);
+    clip-path:polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+    display:flex;align-items:center;justify-content:center;color:var(--bg-void);font-weight:900;font-size:0.9rem;
+  }
+  .back-link{display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:0.9rem;}
+  .back-link:hover{color:var(--yellow-bright);}
+  html[dir="ltr"] .back-link svg{transform:rotate(180deg);}
+
+  main{padding:30px 5% 110px;max-width:720px;margin:0 auto;}
+  .page-title{font-size:clamp(1.5rem,3vw,2rem);color:var(--white);font-weight:900;margin-bottom:22px;}
+
+  .panel-row{display:flex;gap:10px;margin-bottom:16px;}
+  .panel-select{
+    flex:1;padding:13px 14px;border-radius:10px;
+    background:rgba(0,0,0,0.3);border:1px solid rgba(244,180,0,0.25);
+    color:var(--white);font-family:'Tajawal', sans-serif;font-size:0.95rem;
+  }
+  .add-panel-btn{
+    width:48px;flex:0 0 auto;border-radius:10px;border:none;
+    background:var(--yellow);color:var(--bg-void);font-size:1.3rem;font-weight:700;
+  }
+
+  .action-row{display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap;}
+  .action-btn{
+    flex:1;min-width:70px;display:flex;flex-direction:column;align-items:center;gap:6px;
+    padding:14px 8px;border-radius:12px;border:1px solid rgba(244,180,0,0.18);
+    background:linear-gradient(160deg, rgba(122,22,32,0.28), rgba(28,5,8,0.5));
+    color:var(--text-soft);font-size:0.8rem;
+  }
+  .action-btn svg{width:19px;height:19px;color:var(--yellow-bright);}
+  .action-btn.danger svg{color:#ff8a8a;}
+
+  .settings-form{display:none;}
+  .settings-form.show{display:block;}
+
+  .field-label{color:var(--text-muted);font-size:0.85rem;margin-bottom:6px;display:block;margin-top:18px;}
+  .field-input, .field-textarea{
+    width:100%;padding:12px 14px;border-radius:10px;
+    background:rgba(0,0,0,0.3);border:1px solid rgba(244,180,0,0.25);
+    color:var(--white);font-family:'Tajawal', sans-serif;font-size:0.92rem;
+  }
+  .field-textarea{min-height:120px;resize:vertical;line-height:1.7;}
+
+  .type-row{display:flex;gap:10px;margin-top:10px;}
+  .type-option{
+    flex:1;padding:13px;border-radius:10px;border:1.5px solid rgba(244,180,0,0.25);
+    background:rgba(0,0,0,0.25);color:var(--text-muted);text-align:center;font-size:0.9rem;font-weight:700;
+  }
+  .type-option.active{border-color:var(--yellow);color:var(--yellow-bright);background:rgba(244,180,0,0.1);}
+
+  .empty-state{text-align:center;color:var(--text-muted);padding:60px 20px;font-size:0.95rem;}
+
+  .save-bar{
+    position:fixed;bottom:0;left:0;right:0;
+    background:rgba(20,4,7,0.98);border-top:1px solid rgba(244,180,0,0.2);
+    padding:16px 5%;display:none;gap:12px;justify-content:flex-end;z-index:50;
+  }
+  .save-bar.show{display:flex;}
+  .btn-save, .btn-cancel{
+    padding:12px 28px;border-radius:10px;border:none;font-weight:700;font-size:0.92rem;
+    display:flex;align-items:center;gap:8px;justify-content:center;min-width:110px;
+  }
+  .btn-save{background:var(--yellow);color:var(--bg-void);}
+  .btn-cancel{background:transparent;border:1.5px solid var(--text-muted);color:var(--text-muted);}
+
+  .spinner{
+    width:15px;height:15px;border:2px solid rgba(28,5,8,0.3);
+    border-top-color:var(--bg-void);border-radius:50%;
+    animation:spin 0.6s linear infinite;display:inline-block;
+  }
+  .spinner.light{border:2px solid rgba(255,255,255,0.3);border-top-color:var(--white);}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.6);
+    display:none;align-items:center;justify-content:center;z-index:100;padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:linear-gradient(180deg, rgba(58,12,17,0.99), rgba(28,5,8,0.99));
+    border:1px solid rgba(244,180,0,0.25);border-radius:16px;
+    width:100%;max-width:420px;padding:24px;
+  }
+  .modal h2{color:var(--white);font-size:1.1rem;margin-bottom:16px;}
+  .modal p{color:var(--text-muted);font-size:0.88rem;margin-bottom:16px;line-height:1.7;}
+  .modal-actions{display:flex;gap:10px;margin-top:18px;}
+  .modal-actions button{flex:1;padding:12px;border-radius:10px;border:none;font-weight:700;font-size:0.9rem;
+    display:flex;align-items:center;justify-content:center;gap:8px;}
+  .modal-primary{background:var(--yellow);color:var(--bg-void);}
+  .modal-danger{background:#e14444;color:var(--white);}
+  .modal-secondary{background:transparent;border:1.5px solid var(--text-muted) !important;color:var(--text-muted);}
+  .field-select{
+    width:100%;padding:11px 14px;border-radius:10px;
+    background:rgba(0,0,0,0.3);border:1px solid rgba(244,180,0,0.25);
+    color:var(--white);font-family:'Tajawal', sans-serif;font-size:0.9rem;
+  }
+
+  .confirm-toast{
+    position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+    background:var(--bg-void);border:1px solid rgba(244,180,0,0.3);
+    padding:12px 20px;border-radius:10px;color:var(--text-soft);font-size:0.88rem;
+    box-shadow:0 8px 24px rgba(0,0,0,0.5);z-index:200;display:none;
+  }
+  .confirm-toast.show{display:block;}
 </style>
 </head>
 <body>
-  <h1>قسم <span>Embed</span></h1>
-  <p>هذي صفحة مبدئية. الإعدادات التفصيلية لهذا القسم بنبنيها بالخطوة الجاية.</p>
-  <a id="backLink" href="home.html">الرجوع لصفحة السيرفر</a>
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const guild = params.get('guild');
-    if (guild) document.getElementById('backLink').href = 'home.html?guild=' + guild;
-  </script>
+
+<header>
+  <a class="back-link" id="backLink" href="home.html">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    <span data-i18n="back">الرجوع</span>
+  </a>
+  <div class="brand"><div class="mark">S</div>Safio</div>
+  <div style="width:60px;"></div>
+</header>
+
+<main>
+  <h1 class="page-title" data-i18n="page_title">رسائل الإيمبد</h1>
+
+  <div class="panel-row">
+    <select class="panel-select" id="panelSelect"></select>
+    <button class="add-panel-btn" id="addPanelBtn">+</button>
+  </div>
+
+  <div class="action-row" id="actionRow">
+    <button class="action-btn" id="sendBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+      <span data-i18n="btn_send">Send</span>
+    </button>
+    <button class="action-btn danger" id="deleteBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
+      <span data-i18n="btn_delete">Delete</span>
+    </button>
+    <button class="action-btn" id="renameBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>
+      <span data-i18n="btn_rename">Rename</span>
+    </button>
+    <button class="action-btn" id="copyBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      <span data-i18n="btn_copy">Copy</span>
+    </button>
+  </div>
+
+  <div class="empty-state" id="emptyState" data-i18n="empty_state">ما فيه بانلات إيمبد بعد. اضغط + عشان تسوي أول وحدة.</div>
+
+  <div class="settings-form" id="settingsForm">
+    <label class="field-label" data-i18n="field_title">عنوان الإيمبد</label>
+    <input class="field-input" id="titleInput">
+
+    <label class="field-label" data-i18n="field_message">رسالة الإيمبد</label>
+    <textarea class="field-textarea" id="messageInput"></textarea>
+
+    <div class="type-row">
+      <button class="type-option" id="typeEmbedBtn" data-i18n="type_embed">رسالة إيمبد</button>
+      <button class="type-option" id="typeNormalBtn" data-i18n="type_normal">رسالة عادية</button>
+    </div>
+  </div>
+</main>
+
+<div class="save-bar" id="saveBar">
+  <button class="btn-cancel" id="cancelBtn" data-i18n="cancel">إلغاء</button>
+  <button class="btn-save" id="saveBtn"><span id="saveBtnText" data-i18n="save">حفظ التغييرات</span></button>
+</div>
+
+<div class="modal-overlay" id="createModal">
+  <div class="modal">
+    <h2 data-i18n="create_title">بانل إيمبد جديد</h2>
+    <input class="field-input" id="newPanelName">
+    <div class="modal-actions">
+      <button class="modal-secondary" id="createCancelBtn" data-i18n="cancel">إلغاء</button>
+      <button class="modal-primary" id="createConfirmBtn"><span id="createBtnText" data-i18n="create">إنشاء</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="sendModal">
+  <div class="modal">
+    <h2 data-i18n="send_title">إرسال الرسالة</h2>
+    <select class="field-select" id="sendChannelSelect"><option value="" data-i18n="select_channel">اختر روم...</option></select>
+    <div class="modal-actions">
+      <button class="modal-secondary" id="sendCancelBtn" data-i18n="cancel">إلغاء</button>
+      <button class="modal-primary" id="sendConfirmBtn"><span id="sendBtnText" data-i18n="btn_send">Send</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="renameModal">
+  <div class="modal">
+    <h2 data-i18n="rename_title">إعادة تسمية البانل</h2>
+    <input class="field-input" id="renamePanelName">
+    <div class="modal-actions">
+      <button class="modal-secondary" id="renameCancelBtn" data-i18n="cancel">إلغاء</button>
+      <button class="modal-primary" id="renameConfirmBtn"><span id="renameBtnText" data-i18n="save_short">حفظ</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <h2 data-i18n="delete_title">حذف البانل؟</h2>
+    <p data-i18n="delete_text">بيتحذف البانل نهائيًا ولا يرجع. متأكد؟</p>
+    <div class="modal-actions">
+      <button class="modal-secondary" id="deleteCancelBtn" data-i18n="cancel">إلغاء</button>
+      <button class="modal-danger" id="deleteConfirmBtn"><span id="deleteBtnText" data-i18n="btn_delete">Delete</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="confirm-toast" id="confirmToast">تم الحفظ بنجاح</div>
+<script>
+  const T = {
+    ar: {
+      back: "الرجوع", page_title: "رسائل الإيمبد",
+      btn_send: "إرسال", btn_delete: "حذف", btn_rename: "إعادة تسمية", btn_copy: "نسخ",
+      empty_state: "ما فيه بانلات إيمبد بعد. اضغط + عشان تسوي أول وحدة.",
+      field_title: "عنوان الإيمبد", field_message: "رسالة الإيمبد",
+      type_embed: "رسالة إيمبد", type_normal: "رسالة عادية",
+      cancel: "إلغاء", save: "حفظ التغييرات", save_short: "حفظ",
+      create_title: "بانل إيمبد جديد", create: "إنشاء",
+      send_title: "إرسال الرسالة", select_channel: "اختر روم...",
+      rename_title: "إعادة تسمية البانل",
+      delete_title: "حذف البانل؟", delete_text: "بيتحذف البانل نهائيًا ولا يرجع. متأكد؟",
+      toast_created: "تم إنشاء البانل", toast_saved: "تم الحفظ بنجاح",
+      toast_sent: "تم إرسال الرسالة", toast_send_error: "صار خطأ، تأكد إن البوت عنده صلاحية بهالروم",
+      toast_renamed: "تم تغيير الاسم", toast_copied: "تم نسخ البانل", toast_deleted: "تم حذف البانل"
+    },
+    en: {
+      back: "Back", page_title: "Embed Messages",
+      btn_send: "Send", btn_delete: "Delete", btn_rename: "Rename", btn_copy: "Copy",
+      empty_state: "No embed panels yet. Tap + to create your first one.",
+      field_title: "Embed Title", field_message: "Embed Message",
+      type_embed: "Embed Message", type_normal: "Normal Message",
+      cancel: "Cancel", save: "Save Changes", save_short: "Save",
+      create_title: "New Embed Panel", create: "Create",
+      send_title: "Send Message", select_channel: "Select channel...",
+      rename_title: "Rename Panel",
+      delete_title: "Delete Panel?", delete_text: "This panel will be permanently deleted. Are you sure?",
+      toast_created: "Panel created", toast_saved: "Saved successfully",
+      toast_sent: "Message sent", toast_send_error: "Something went wrong, make sure the bot has access to that channel",
+      toast_renamed: "Name updated", toast_copied: "Panel copied", toast_deleted: "Panel deleted"
+    }
+  };
+
+  function getCookie(name){
+    const m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return m ? m[2] : null;
+  }
+  const lang = getCookie('safio_lang') || 'ar';
+
+  function applyLang(){
+    document.getElementById('htmlRoot').setAttribute('lang', lang);
+    document.getElementById('htmlRoot').setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (T[lang][key]) el.textContent = T[lang][key];
+    });
+  }
+  applyLang();
+  function t(key){ return T[lang][key]; }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const guildId = urlParams.get('guild');
+  document.getElementById('backLink').href = guildId ? `home.html?guild=${guildId}` : 'home.html';
+  if (!guildId) window.location.href = 'Dashboard.html';
+
+  let panels = [];
+  let currentPanel = null;
+  let savedSnapshot = null;
+  let currentType = 'embed';
+
+  function showToast(text){
+    const toastEl = document.getElementById('confirmToast');
+    toastEl.textContent = text;
+    toastEl.classList.add('show');
+    setTimeout(() => toastEl.classList.remove('show'), 2200);
+  }
+
+  function openModal(id){ document.getElementById(id).classList.add('open'); }
+  function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+  Promise.all([
+    fetch(`/api/guild/${guildId}/channels`).then(r => r.json()),
+    fetch(`/api/guild/${guildId}/embed-panels`).then(r => r.json())
+  ]).then(([channels, panelsList]) => {
+    const select = document.getElementById('sendChannelSelect');
+    const placeholder = select.firstElementChild;
+    select.innerHTML = '';
+    select.appendChild(placeholder);
+    (Array.isArray(channels) ? channels : []).forEach(ch => {
+      const opt = document.createElement('option');
+      opt.value = ch.id;
+      opt.textContent = '#' + ch.name;
+      select.appendChild(opt);
+    });
+
+    panels = panelsList;
+    renderPanelSelect();
+    if (panels.length) selectPanel(panels[0]._id);
+    else showEmptyState();
+  });
+
+  function renderPanelSelect(){
+    const select = document.getElementById('panelSelect');
+    select.innerHTML = '';
+    panels.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p._id;
+      opt.textContent = p.name;
+      select.appendChild(opt);
+    });
+  }
+  document.getElementById('panelSelect').addEventListener('change', (e) => selectPanel(e.target.value));
+
+  function showEmptyState(){
+    document.getElementById('emptyState').style.display = 'block';
+    document.getElementById('settingsForm').classList.remove('show');
+    document.getElementById('actionRow').style.display = 'none';
+    document.getElementById('panelSelect').style.display = 'none';
+  }
+  function showFormState(){
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('settingsForm').classList.add('show');
+    document.getElementById('actionRow').style.display = 'flex';
+    document.getElementById('panelSelect').style.display = 'block';
+  }
+
+  function setType(type){
+    currentType = type;
+    document.getElementById('typeEmbedBtn').classList.toggle('active', type === 'embed');
+    document.getElementById('typeNormalBtn').classList.toggle('active', type === 'normal');
+    checkDirty();
+  }
+  document.getElementById('typeEmbedBtn').addEventListener('click', () => setType('embed'));
+  document.getElementById('typeNormalBtn').addEventListener('click', () => setType('normal'));
+
+  function selectPanel(id){
+    currentPanel = panels.find(p => p._id === id);
+    if (!currentPanel) return showEmptyState();
+    showFormState();
+    document.getElementById('panelSelect').value = id;
+
+    document.getElementById('titleInput').value = currentPanel.title || '';
+    document.getElementById('messageInput').value = currentPanel.message || '';
+    setType(currentPanel.type || 'embed');
+
+    savedSnapshot = getFormValues();
+    checkDirty();
+  }
+
+  function getFormValues(){
+    return {
+      title: document.getElementById('titleInput').value,
+      message: document.getElementById('messageInput').value,
+      type: currentType
+    };
+  }
+
+  function checkDirty(){
+    if (!savedSnapshot) return;
+    const dirty = JSON.stringify(getFormValues()) !== JSON.stringify(savedSnapshot);
+    document.getElementById('saveBar').classList.toggle('show', dirty);
+  }
+  document.getElementById('settingsForm').addEventListener('input', checkDirty);
+
+  document.getElementById('cancelBtn').addEventListener('click', () => {
+    if (currentPanel) selectPanel(currentPanel._id);
+  });
+
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    const btn = document.getElementById('saveBtn');
+    const btnText = document.getElementById('saveBtnText');
+    btn.disabled = true;
+    btnText.innerHTML = '<span class="spinner"></span>';
+
+    const values = getFormValues();
+    fetch(`/api/guild/${guildId}/embed-panels/${currentPanel._id}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(values)
+    }).then(r => r.json()).then(() => {
+      Object.assign(currentPanel, values);
+      savedSnapshot = values;
+      checkDirty();
+      showToast(t('toast_saved'));
+    }).finally(() => {
+      btn.disabled = false;
+      btnText.textContent = t('save');
+    });
+  });
+
+  document.getElementById('addPanelBtn').addEventListener('click', () => {
+    document.getElementById('newPanelName').value = '';
+    openModal('createModal');
+  });
+  document.getElementById('createCancelBtn').addEventListener('click', () => closeModal('createModal'));
+  document.getElementById('createConfirmBtn').addEventListener('click', () => {
+    const name = document.getElementById('newPanelName').value.trim();
+    if (!name) return;
+    const btnText = document.getElementById('createBtnText');
+    btnText.innerHTML = '<span class="spinner light"></span>';
+
+    fetch(`/api/guild/${guildId}/embed-panels`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    }).then(r => r.json()).then(newPanel => {
+      panels.push(newPanel);
+      renderPanelSelect();
+      selectPanel(newPanel._id);
+      closeModal('createModal');
+      showToast(t('toast_created'));
+    }).finally(() => { btnText.textContent = t('create'); });
+  });
+
+  document.getElementById('sendBtn').addEventListener('click', () => {
+    if (!currentPanel) return;
+    document.getElementById('sendChannelSelect').value = '';
+    openModal('sendModal');
+  });
+  document.getElementById('sendCancelBtn').addEventListener('click', () => closeModal('sendModal'));
+  document.getElementById('sendConfirmBtn').addEventListener('click', () => {
+    const channelId = document.getElementById('sendChannelSelect').value;
+    if (!channelId) return;
+    const btnText = document.getElementById('sendBtnText');
+    btnText.innerHTML = '<span class="spinner light"></span>';
+
+    fetch(`/api/guild/${guildId}/embed-panels/${currentPanel._id}/send`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ channelId })
+    }).then(r => {
+      if (!r.ok) throw new Error();
+      closeModal('sendModal');
+      showToast(t('toast_sent'));
+    }).catch(() => showToast(t('toast_send_error')))
+      .finally(() => { btnText.textContent = t('btn_send'); });
+  });
+
+  document.getElementById('renameBtn').addEventListener('click', () => {
+    if (!currentPanel) return;
+    document.getElementById('renamePanelName').value = currentPanel.name;
+    openModal('renameModal');
+  });
+  document.getElementById('renameCancelBtn').addEventListener('click', () => closeModal('renameModal'));
+  document.getElementById('renameConfirmBtn').addEventListener('click', () => {
+    const name = document.getElementById('renamePanelName').value.trim();
+    if (!name) return;
+    const btnText = document.getElementById('renameBtnText');
+    btnText.innerHTML = '<span class="spinner light"></span>';
+
+    fetch(`/api/guild/${guildId}/embed-panels/${currentPanel._id}/rename`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    }).then(r => r.json()).then(() => {
+      currentPanel.name = name;
+      renderPanelSelect();
+      document.getElementById('panelSelect').value = currentPanel._id;
+      closeModal('renameModal');
+      showToast(t('toast_renamed'));
+    }).finally(() => { btnText.textContent = t('save_short'); });
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    if (!currentPanel) return;
+    fetch(`/api/guild/${guildId}/embed-panels/${currentPanel._id}/copy`, { method: 'POST' })
+      .then(r => r.json()).then(newPanel => {
+        panels.push(newPanel);
+        renderPanelSelect();
+        selectPanel(newPanel._id);
+        showToast(t('toast_copied'));
+      });
+  });
+
+  document.getElementById('deleteBtn').addEventListener('click', () => {
+    if (!currentPanel) return;
+    openModal('deleteModal');
+  });
+  document.getElementById('deleteCancelBtn').addEventListener('click', () => closeModal('deleteModal'));
+  document.getElementById('deleteConfirmBtn').addEventListener('click', () => {
+    const btnText = document.getElementById('deleteBtnText');
+    btnText.innerHTML = '<span class="spinner light"></span>';
+
+    fetch(`/api/guild/${guildId}/embed-panels/${currentPanel._id}`, { method: 'DELETE' })
+      .then(r => r.json()).then(() => {
+        panels = panels.filter(p => p._id !== currentPanel._id);
+        renderPanelSelect();
+        closeModal('deleteModal');
+        showToast(t('toast_deleted'));
+        if (panels.length) selectPanel(panels[0]._id);
+        else { currentPanel = null; showEmptyState(); }
+      }).finally(() => { btnText.textContent = t('btn_delete'); });
+  });
+</script>
+
 </body>
 </html>
