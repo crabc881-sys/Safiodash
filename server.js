@@ -743,5 +743,156 @@ app.post('/api/guild/:guildId/ticket-panels/:id/send', async (req, res) => {
   }
 });
 
+// --- Embed Panels Routes ---
+
+app.get('/api/guild/:guildId/embed-panels', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const client = await getMongo();
+    const col = client.db('test').collection('embedpanels');
+    const list = await col.find({ guildId: req.params.guildId }).toArray();
+    res.json(list.map(d => ({ ...d, _id: d._id.toString() })));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'fetch_failed' });
+  }
+});
+
+app.post('/api/guild/:guildId/embed-panels', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: 'missing_name' });
+    const client = await getMongo();
+    const col = client.db('test').collection('embedpanels');
+    const doc = {
+      guildId: req.params.guildId,
+      name: String(name),
+      title: '',
+      message: '',
+      type: 'embed',
+      createdAt: new Date()
+    };
+    const result = await col.insertOne(doc);
+    res.json({ ...doc, _id: result.insertedId.toString() });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'create_failed' });
+  }
+});
+
+app.put('/api/guild/:guildId/embed-panels/:id', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const { title, message, type } = req.body;
+    const client = await getMongo();
+    const col = client.db('test').collection('embedpanels');
+    await col.updateOne(
+      { _id: new ObjectId(req.params.id), guildId: req.params.guildId },
+      { $set: {
+          title: String(title || ''),
+          message: String(message || ''),
+          type: type === 'normal' ? 'normal' : 'embed'
+      } }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'update_failed' });
+  }
+});
+
+app.delete('/api/guild/:guildId/embed-panels/:id', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const client = await getMongo();
+    const col = client.db('test').collection('embedpanels');
+    await col.deleteOne({ _id: new ObjectId(req.params.id), guildId: req.params.guildId });
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'delete_failed' });
+  }
+});
+
+app.post('/api/guild/:guildId/embed-panels/:id/rename', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: 'missing_name' });
+    const client = await getMongo();
+    const col = client.db('test').collection('embedpanels');
+    await col.updateOne(
+      { _id: new ObjectId(req.params.id), guildId: req.params.guildId },
+      { $set: { name: String(name) } }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'rename_failed' });
+  }
+});
+
+app.post('/api/guild/:guildId/embed-panels/:id/copy', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const client = await getMongo();
+    const col = client.db('test').collection('embedpanels');
+    const original = await col.findOne({ _id: new ObjectId(req.params.id), guildId: req.params.guildId });
+    if (!original) return res.status(404).json({ error: 'not_found' });
+
+    const copy = { ...original };
+    delete copy._id;
+    copy.name = `Copy ${original.name}`;
+    copy.createdAt = new Date();
+
+    const result = await col.insertOne(copy);
+    res.json({ ...copy, _id: result.insertedId.toString() });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'copy_failed' });
+  }
+});
+
+app.post('/api/guild/:guildId/embed-panels/:id/send', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'not_logged_in' });
+  try {
+    const { channelId } = req.body;
+    if (!channelId) return res.status(400).json({ error: 'missing_channel' });
+
+    const client = await getMongo();
+    const col = client.db('test').collection('embedpanels');
+    const panel = await col.findOne({ _id: new ObjectId(req.params.id), guildId: req.params.guildId });
+    if (!panel) return res.status(404).json({ error: 'not_found' });
+
+    let body;
+    if (panel.type === 'normal') {
+      body = { content: panel.message || ' ' };
+    } else {
+      const embed = { color: 0xF4B400 };
+      if (panel.title) embed.title = panel.title;
+      embed.description = panel.message || ' ';
+      body = { embeds: [embed] };
+    }
+
+    const sendRes = await fetch(`https://discord.com/api/channels/${channelId}/messages`, {
+      method: 'POST',
+      headers: { Authorization: `Bot ${BOT_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    if (!sendRes.ok) {
+      const errData = await sendRes.json().catch(() => ({}));
+      console.error('Discord send error:', errData);
+      return res.status(500).json({ error: 'discord_send_failed' });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'send_failed' });
+  }
+});
+
 // تشغيل السيرفر
 app.listen(PORT, () => console.log(`Safio server running on http://localhost:${PORT}`));
