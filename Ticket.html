@@ -3,36 +3,494 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Safio | Embed</title>
+<title>Safio | التذاكر</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg-void:#1c0508; --red-deep:#3d0c10; --red-main:#7a1620;
-    --yellow:#f4b400; --yellow-bright:#ffd447; --white:#ffffff; --text-muted:#caa79a;
+    --yellow:#f4b400; --yellow-bright:#ffd447; --white:#ffffff;
+    --text-soft:#f2e4d8; --text-muted:#caa79a;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{overflow-x:hidden;}
   body{
     font-family:'Tajawal', sans-serif;
-    background:linear-gradient(160deg, var(--bg-void), var(--red-deep));
-    color:var(--white); min-height:100vh;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    text-align:center;padding:40px;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(168,35,47,0.3), transparent 45%),
+      linear-gradient(160deg, var(--bg-void) 0%, var(--red-deep) 60%, var(--bg-void) 100%);
+    color:var(--text-soft);min-height:100vh;
   }
-  h1{font-family:'Rubik', sans-serif;font-weight:900;font-size:2.1rem;margin-bottom:14px;}
-  span{color:var(--yellow);}
-  p{color:var(--text-muted);max-width:480px;line-height:1.8;margin-bottom:28px;}
-  a{background:var(--white);color:var(--red-deep);padding:14px 32px;border-radius:10px;font-weight:700;text-decoration:none;}
+  h1,h2,.brand{font-family:'Rubik', sans-serif;}
+  a{text-decoration:none;color:inherit;}
+  button{font-family:'Tajawal', sans-serif;cursor:pointer;}
+
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 5%;border-bottom:1px solid rgba(244,180,0,0.15);
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.25rem;color:var(--white);}
+  .brand .mark{
+    width:32px;height:32px;background:var(--yellow);
+    clip-path:polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+    display:flex;align-items:center;justify-content:center;color:var(--bg-void);font-weight:900;font-size:0.9rem;
+  }
+  .back-link{display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:0.9rem;}
+  .back-link:hover{color:var(--yellow-bright);}
+
+  main{padding:30px 5% 110px;max-width:720px;margin:0 auto;}
+  .page-title{font-size:clamp(1.5rem,3vw,2rem);color:var(--white);font-weight:900;margin-bottom:22px;}
+
+  .panel-row{display:flex;gap:10px;margin-bottom:16px;}
+  .panel-select{
+    flex:1;padding:13px 14px;border-radius:10px;
+    background:rgba(0,0,0,0.3);border:1px solid rgba(244,180,0,0.25);
+    color:var(--white);font-family:'Tajawal', sans-serif;font-size:0.95rem;
+  }
+  .add-panel-btn{
+    width:48px;flex:0 0 auto;border-radius:10px;border:none;
+    background:var(--yellow);color:var(--bg-void);font-size:1.3rem;font-weight:700;
+  }
+
+  .action-row{display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap;}
+  .action-btn{
+    flex:1;min-width:70px;display:flex;flex-direction:column;align-items:center;gap:6px;
+    padding:14px 8px;border-radius:12px;border:1px solid rgba(244,180,0,0.18);
+    background:linear-gradient(160deg, rgba(122,22,32,0.28), rgba(28,5,8,0.5));
+    color:var(--text-soft);font-size:0.8rem;
+  }
+  .action-btn svg{width:19px;height:19px;color:var(--yellow-bright);}
+  .action-btn.danger svg{color:#ff8a8a;}
+  .action-btn:disabled{opacity:0.4;}
+
+  .settings-form{display:none;}
+  .settings-form.show{display:block;}
+
+  .field-label{color:var(--text-muted);font-size:0.85rem;margin-bottom:6px;display:block;margin-top:18px;}
+  .field-input, .field-textarea, .field-select{
+    width:100%;padding:12px 14px;border-radius:10px;
+    background:rgba(0,0,0,0.3);border:1px solid rgba(244,180,0,0.25);
+    color:var(--white);font-family:'Tajawal', sans-serif;font-size:0.92rem;
+  }
+  .field-textarea{min-height:90px;resize:vertical;line-height:1.7;}
+  .field-hint{color:var(--text-muted);font-size:0.78rem;margin-top:6px;}
+
+  .empty-state{text-align:center;color:var(--text-muted);padding:60px 20px;font-size:0.95rem;}
+
+  .save-bar{
+    position:fixed;bottom:0;left:0;right:0;
+    background:rgba(20,4,7,0.98);border-top:1px solid rgba(244,180,0,0.2);
+    padding:16px 5%;display:none;gap:12px;justify-content:flex-end;z-index:50;
+  }
+  .save-bar.show{display:flex;}
+  .btn-save, .btn-cancel{
+    padding:12px 28px;border-radius:10px;border:none;font-weight:700;font-size:0.92rem;
+    display:flex;align-items:center;gap:8px;justify-content:center;min-width:110px;
+  }
+  .btn-save{background:var(--yellow);color:var(--bg-void);}
+  .btn-cancel{background:transparent;border:1.5px solid var(--text-muted);color:var(--text-muted);}
+
+  .spinner{
+    width:15px;height:15px;border:2px solid rgba(28,5,8,0.3);
+    border-top-color:var(--bg-void);border-radius:50%;
+    animation:spin 0.6s linear infinite;display:inline-block;
+  }
+  .spinner.light{border:2px solid rgba(255,255,255,0.3);border-top-color:var(--white);}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.6);
+    display:none;align-items:center;justify-content:center;z-index:100;padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:linear-gradient(180deg, rgba(58,12,17,0.99), rgba(28,5,8,0.99));
+    border:1px solid rgba(244,180,0,0.25);border-radius:16px;
+    width:100%;max-width:420px;padding:24px;
+  }
+  .modal h2{color:var(--white);font-size:1.1rem;margin-bottom:16px;}
+  .modal p{color:var(--text-muted);font-size:0.88rem;margin-bottom:16px;line-height:1.7;}
+  .modal-actions{display:flex;gap:10px;margin-top:18px;}
+  .modal-actions button{flex:1;padding:12px;border-radius:10px;border:none;font-weight:700;font-size:0.9rem;
+    display:flex;align-items:center;justify-content:center;gap:8px;}
+  .modal-primary{background:var(--yellow);color:var(--bg-void);}
+  .modal-danger{background:#e14444;color:var(--white);}
+  .modal-secondary{background:transparent;border:1.5px solid var(--text-muted) !important;color:var(--text-muted);}
+
+  .confirm-toast{
+    position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+    background:var(--bg-void);border:1px solid rgba(244,180,0,0.3);
+    padding:12px 20px;border-radius:10px;color:var(--text-soft);font-size:0.88rem;
+    box-shadow:0 8px 24px rgba(0,0,0,0.5);z-index:200;display:none;
+  }
+  .confirm-toast.show{display:block;}
 </style>
 </head>
 <body>
-  <h1>قسم <span>Embed</span></h1>
-  <p>هذي صفحة مبدئية. الإعدادات التفصيلية لهذا القسم بنبنيها بالخطوة الجاية.</p>
-  <a id="backLink" href="home.html">الرجوع لصفحة السيرفر</a>
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const guild = params.get('guild');
-    if (guild) document.getElementById('backLink').href = 'home.html?guild=' + guild;
-  </script>
+
+<header>
+  <a class="back-link" id="backLink" href="home.html">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    الرجوع
+  </a>
+  <div class="brand"><div class="mark">S</div>Safio</div>
+  <div style="width:60px;"></div>
+</header>
+
+<main>
+  <h1 class="page-title">التذاكر</h1>
+
+  <div class="panel-row">
+    <select class="panel-select" id="panelSelect"></select>
+    <button class="add-panel-btn" id="addPanelBtn">+</button>
+  </div>
+
+  <div class="action-row" id="actionRow">
+    <button class="action-btn" id="sendBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+      Send
+    </button>
+    <button class="action-btn danger" id="deleteBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
+      Delete
+    </button>
+    <button class="action-btn" id="renameBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>
+      Rename
+    </button>
+    <button class="action-btn" id="copyBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copy
+    </button>
+  </div>
+
+  <div class="empty-state" id="emptyState">ما فيه بانلات بعد. اضغط + عشان تسوي أول بانل.</div>
+
+  <div class="settings-form" id="settingsForm">
+    <label class="field-label">اسم الزر اللي ينشئ التذكرة</label>
+    <input class="field-input" id="buttonLabelInput" placeholder="مثال: فتح تذكرة">
+
+    <label class="field-label">رسالة الإيمبد اللي تظهر بالبانل</label>
+    <textarea class="field-textarea" id="embedDescInput" placeholder="اكتب وصف البانل..."></textarea>
+
+    <label class="field-label">كاتجوري التذاكر المفتوحة</label>
+    <select class="field-select" id="openCategorySelect"><option value="">اختر كاتجوري...</option></select>
+
+    <label class="field-label">كاتجوري التذاكر المغلقة</label>
+    <select class="field-select" id="closedCategorySelect"><option value="">اختر كاتجوري...</option></select>
+
+    <label class="field-label">رتبة الدعم</label>
+    <select class="field-select" id="supportRoleSelect"><option value="">اختر رول...</option></select>
+
+    <label class="field-label">رسالة التضمين داخل التذكرة المفتوحة</label>
+    <textarea class="field-textarea" id="ticketEmbedInput" placeholder="اكتب رسالة الترحيب بالتذكرة..."></textarea>
+    <div class="field-hint">راح يضاف منشن العضو ومنشن رتبة الدعم تلقائيًا فوق هذي الرسالة</div>
+
+    <label class="field-label">رابط غلاف البانل (صورة تظهر أسفل الوصف)</label>
+    <input class="field-input" id="bannerUrlInput" placeholder="https://...">
+  </div>
+</main>
+
+<div class="save-bar" id="saveBar">
+  <button class="btn-cancel" id="cancelBtn">إلغاء</button>
+  <button class="btn-save" id="saveBtn"><span id="saveBtnText">حفظ التغييرات</span></button>
+</div>
+
+<div class="modal-overlay" id="createModal">
+  <div class="modal">
+    <h2>بانل جديد</h2>
+    <input class="field-input" id="newPanelName" placeholder="اسم البانل">
+    <div class="modal-actions">
+      <button class="modal-secondary" id="createCancelBtn">إلغاء</button>
+      <button class="modal-primary" id="createConfirmBtn"><span id="createBtnText">إنشاء</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="sendModal">
+  <div class="modal">
+    <h2>إرسال البانل</h2>
+    <select class="field-select" id="sendChannelSelect"><option value="">اختر روم...</option></select>
+    <div class="modal-actions">
+      <button class="modal-secondary" id="sendCancelBtn">إلغاء</button>
+      <button class="modal-primary" id="sendConfirmBtn"><span id="sendBtnText">Send</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="renameModal">
+  <div class="modal">
+    <h2>إعادة تسمية البانل</h2>
+    <input class="field-input" id="renamePanelName" placeholder="الاسم الجديد">
+    <div class="modal-actions">
+      <button class="modal-secondary" id="renameCancelBtn">إلغاء</button>
+      <button class="modal-primary" id="renameConfirmBtn"><span id="renameBtnText">حفظ</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <h2>حذف البانل؟</h2>
+    <p>بيتحذف البانل نهائيًا ولا يرجع. متأكد؟</p>
+    <div class="modal-actions">
+      <button class="modal-secondary" id="deleteCancelBtn">إلغاء</button>
+      <button class="modal-danger" id="deleteConfirmBtn"><span id="deleteBtnText">حذف</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="confirm-toast" id="confirmToast">تم الحفظ بنجاح</div>
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const guildId = urlParams.get('guild');
+  document.getElementById('backLink').href = guildId ? `home.html?guild=${guildId}` : 'home.html';
+  if (!guildId) window.location.href = 'Dashboard.html';
+
+  let panels = [];
+  let currentPanel = null;
+  let savedSnapshot = null;
+  let allRoles = [], allChannels = [], allCategories = [];
+
+  function showToast(text){
+    const t = document.getElementById('confirmToast');
+    t.textContent = text;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  function openModal(id){ document.getElementById(id).classList.add('open'); }
+  function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+  Promise.all([
+    fetch(`/api/guild/${guildId}/roles`).then(r => r.json()),
+    fetch(`/api/guild/${guildId}/channels`).then(r => r.json()),
+    fetch(`/api/guild/${guildId}/categories`).then(r => r.json()),
+    fetch(`/api/guild/${guildId}/ticket-panels`).then(r => r.json())
+  ]).then(([roles, channels, categories, panelsList]) => {
+    allRoles = Array.isArray(roles) ? roles : [];
+    allChannels = Array.isArray(channels) ? channels : [];
+    allCategories = Array.isArray(categories) ? categories : [];
+    panels = panelsList;
+
+    fillOptions('openCategorySelect', allCategories);
+    fillOptions('closedCategorySelect', allCategories);
+    fillOptions('supportRoleSelect', allRoles);
+    fillOptions('sendChannelSelect', allChannels, '#');
+
+    renderPanelSelect();
+    if (panels.length) selectPanel(panels[0]._id);
+    else showEmptyState();
+  });
+
+  function fillOptions(id, items, prefix){
+    const select = document.getElementById(id);
+    const placeholder = select.firstElementChild;
+    select.innerHTML = '';
+    select.appendChild(placeholder);
+    items.forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = (prefix || '') + item.name;
+      select.appendChild(opt);
+    });
+  }
+
+  function renderPanelSelect(){
+    const select = document.getElementById('panelSelect');
+    select.innerHTML = '';
+    panels.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p._id;
+      opt.textContent = p.name;
+      select.appendChild(opt);
+    });
+  }
+
+  document.getElementById('panelSelect').addEventListener('change', (e) => {
+    selectPanel(e.target.value);
+  });
+
+  function showEmptyState(){
+    document.getElementById('emptyState').style.display = 'block';
+    document.getElementById('settingsForm').classList.remove('show');
+    document.getElementById('actionRow').style.display = 'none';
+    document.getElementById('panelSelect').style.display = 'none';
+  }
+
+  function showFormState(){
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('settingsForm').classList.add('show');
+    document.getElementById('actionRow').style.display = 'flex';
+    document.getElementById('panelSelect').style.display = 'block';
+  }
+
+  function selectPanel(id){
+    currentPanel = panels.find(p => p._id === id);
+    if (!currentPanel) return showEmptyState();
+    showFormState();
+    document.getElementById('panelSelect').value = id;
+
+    document.getElementById('buttonLabelInput').value = currentPanel.buttonLabel || '';
+    document.getElementById('embedDescInput').value = currentPanel.embedDescription || '';
+    document.getElementById('openCategorySelect').value = currentPanel.openCategoryId || '';
+    document.getElementById('closedCategorySelect').value = currentPanel.closedCategoryId || '';
+    document.getElementById('supportRoleSelect').value = currentPanel.supportRoleId || '';
+    document.getElementById('ticketEmbedInput').value = currentPanel.ticketEmbedMessage || '';
+    document.getElementById('bannerUrlInput').value = currentPanel.bannerUrl || '';
+
+    savedSnapshot = getFormValues();
+    checkDirty();
+  }
+
+  function getFormValues(){
+    return {
+      buttonLabel: document.getElementById('buttonLabelInput').value,
+      embedDescription: document.getElementById('embedDescInput').value,
+      openCategoryId: document.getElementById('openCategorySelect').value,
+      closedCategoryId: document.getElementById('closedCategorySelect').value,
+      supportRoleId: document.getElementById('supportRoleSelect').value,
+      ticketEmbedMessage: document.getElementById('ticketEmbedInput').value,
+      bannerUrl: document.getElementById('bannerUrlInput').value
+    };
+  }
+
+  function checkDirty(){
+    if (!savedSnapshot) return;
+    const dirty = JSON.stringify(getFormValues()) !== JSON.stringify(savedSnapshot);
+    document.getElementById('saveBar').classList.toggle('show', dirty);
+  }
+
+  document.getElementById('settingsForm').addEventListener('input', checkDirty);
+  document.getElementById('settingsForm').addEventListener('change', checkDirty);
+
+  document.getElementById('cancelBtn').addEventListener('click', () => {
+    if (currentPanel) selectPanel(currentPanel._id);
+  });
+
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    const btn = document.getElementById('saveBtn');
+    const btnText = document.getElementById('saveBtnText');
+    btn.disabled = true;
+    btnText.innerHTML = '<span class="spinner"></span>';
+
+    const values = getFormValues();
+    fetch(`/api/guild/${guildId}/ticket-panels/${currentPanel._id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(values)
+    }).then(r => r.json()).then(() => {
+      Object.assign(currentPanel, values);
+      savedSnapshot = values;
+      checkDirty();
+      showToast('تم الحفظ بنجاح');
+    }).finally(() => {
+      btn.disabled = false;
+      btnText.textContent = 'حفظ التغييرات';
+    });
+  });
+
+  document.getElementById('addPanelBtn').addEventListener('click', () => {
+    document.getElementById('newPanelName').value = '';
+    openModal('createModal');
+  });
+  document.getElementById('createCancelBtn').addEventListener('click', () => closeModal('createModal'));
+  document.getElementById('createConfirmBtn').addEventListener('click', () => {
+    const name = document.getElementById('newPanelName').value.trim();
+    if (!name) return;
+    const btnText = document.getElementById('createBtnText');
+    btnText.innerHTML = '<span class="spinner light"></span>';
+
+    fetch(`/api/guild/${guildId}/ticket-panels`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    }).then(r => r.json()).then(newPanel => {
+      panels.push(newPanel);
+      renderPanelSelect();
+      selectPanel(newPanel._id);
+      closeModal('createModal');
+      showToast('تم إنشاء البانل');
+    }).finally(() => { btnText.textContent = 'إنشاء'; });
+  });
+
+  document.getElementById('sendBtn').addEventListener('click', () => {
+    if (!currentPanel) return;
+    document.getElementById('sendChannelSelect').value = '';
+    openModal('sendModal');
+  });
+  document.getElementById('sendCancelBtn').addEventListener('click', () => closeModal('sendModal'));
+  document.getElementById('sendConfirmBtn').addEventListener('click', () => {
+    const channelId = document.getElementById('sendChannelSelect').value;
+    if (!channelId) return;
+    const btnText = document.getElementById('sendBtnText');
+    btnText.innerHTML = '<span class="spinner light"></span>';
+
+    fetch(`/api/guild/${guildId}/ticket-panels/${currentPanel._id}/send`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ channelId })
+    }).then(r => {
+      if (!r.ok) throw new Error();
+      closeModal('sendModal');
+      showToast('تم إرسال البانل للروم');
+    }).catch(() => showToast('صار خطأ، تأكد إن البوت عنده صلاحية بهالروم'))
+      .finally(() => { btnText.textContent = 'Send'; });
+  });
+
+  document.getElementById('renameBtn').addEventListener('click', () => {
+    if (!currentPanel) return;
+    document.getElementById('renamePanelName').value = currentPanel.name;
+    openModal('renameModal');
+  });
+  document.getElementById('renameCancelBtn').addEventListener('click', () => closeModal('renameModal'));
+  document.getElementById('renameConfirmBtn').addEventListener('click', () => {
+    const name = document.getElementById('renamePanelName').value.trim();
+    if (!name) return;
+    const btnText = document.getElementById('renameBtnText');
+    btnText.innerHTML = '<span class="spinner light"></span>';
+
+    fetch(`/api/guild/${guildId}/ticket-panels/${currentPanel._id}/rename`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    }).then(r => r.json()).then(() => {
+      currentPanel.name = name;
+      renderPanelSelect();
+      document.getElementById('panelSelect').value = currentPanel._id;
+      closeModal('renameModal');
+      showToast('تم تغيير الاسم');
+    }).finally(() => { btnText.textContent = 'حفظ'; });
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    if (!currentPanel) return;
+    fetch(`/api/guild/${guildId}/ticket-panels/${currentPanel._id}/copy`, { method: 'POST' })
+      .then(r => r.json()).then(newPanel => {
+        panels.push(newPanel);
+        renderPanelSelect();
+        selectPanel(newPanel._id);
+        showToast('تم نسخ البانل');
+      });
+  });
+
+  document.getElementById('deleteBtn').addEventListener('click', () => {
+    if (!currentPanel) return;
+    openModal('deleteModal');
+  });
+  document.getElementById('deleteCancelBtn').addEventListener('click', () => closeModal('deleteModal'));
+  document.getElementById('deleteConfirmBtn').addEventListener('click', () => {
+    const btnText = document.getElementById('deleteBtnText');
+    btnText.innerHTML = '<span class="spinner light"></span>';
+
+    fetch(`/api/guild/${guildId}/ticket-panels/${currentPanel._id}`, { method: 'DELETE' })
+      .then(r => r.json()).then(() => {
+        panels = panels.filter(p => p._id !== currentPanel._id);
+        renderPanelSelect();
+        closeModal('deleteModal');
+        showToast('تم حذف البانل');
+        if (panels.length) selectPanel(panels[0]._id);
+        else { currentPanel = null; showEmptyState(); }
+      }).finally(() => { btnText.textContent = 'حذف'; });
+  });
+</script>
+
 </body>
 </html>
